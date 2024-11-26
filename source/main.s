@@ -1,0 +1,6 @@
+.EXPORT RESET
+
+.SEGMENT "CDE"
+   .PROC RESET
+      LDA #$00
+   .ENDPROC
