@@ -1,0 +1,5 @@
+.EXPORT OAM
+
+.SEGMENT "OAM"
+   OAM:
+   .RES 256
