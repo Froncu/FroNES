@@ -31,14 +31,14 @@ $(OUT_DIR):
 
 # Assemble .s files to objects
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.s $(OBJ_DIR)
-	$(CA65) -t nes -o $@ $<
+	$(CA65) -t nes -g -o $@ $<
 
 # Link the object files into an NES file
 OBJ_FILES := $(patsubst $(SRC_DIR)/%.s,$(OBJ_DIR)/%.o,$(wildcard $(SRC_DIR)/*.s))
 BASE_TGT := $(OUT_DIR)/$(TGT_NAME)
 TGT := $(BASE_TGT).nes
 $(TGT): $(OBJ_FILES) $(OUT_DIR)
-	$(LD65) -C ${CFG_DIR}/${CFG_NAME}.cfg -o $@ $(OBJ_FILES)
+	$(LD65) -C ${CFG_DIR}/${CFG_NAME}.cfg --dbgfile $(BASE_TGT).dbg -o $@ $(OBJ_FILES)
 
 #----------------------------------------------------------------
 
