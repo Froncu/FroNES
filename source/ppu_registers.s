@@ -8,19 +8,19 @@
 .EXPORT PPU_STATUS
 
 .SEGMENT "PPU"
-   PPU_CONTROL:
+   PPU_CONTROL: ; miscellaneous settings (https://www.nesdev.org/wiki/PPU_registers#PPUCTRL)
    .RES 1
-   PPU_MASK:
+   PPU_MASK: ; rendering settings (https://www.nesdev.org/wiki/PPU_registers#PPUMASK)
    .RES 1
-   PPU_STATUS:
+   PPU_STATUS: ; rendering events (https://www.nesdev.org/wiki/PPU_registers#PPUSTATUS)
    .RES 1
-   OAM_ADDRESS:
+   OAM_ADDRESS: ; OAM address (https://www.nesdev.org/wiki/PPU_registers#OAMADDR)
    .RES 1
-   OAM_DATA:
+   OAM_DATA: ; OAM data (https://www.nesdev.org/wiki/PPU_registers#OAMDATA)
    .RES 1
-   PPU_SCROLL:
+   PPU_SCROLL: ; X and Y scroll (https://www.nesdev.org/wiki/PPU_registers#PPUSCROLL)
    .RES 1
-   PPU_ADDRESS:
+   PPU_ADDRESS: ; VRAM address (https://www.nesdev.org/wiki/PPU_registers#PPUADDR)
    .RES 1
-   PPU_DATA:
+   PPU_DATA: ; VRAM data (https://www.nesdev.org/wiki/PPU_registers#PPUDATA)
    .RES 1
