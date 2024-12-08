@@ -5,6 +5,7 @@
 .IMPORT PPU_MASK
 
 .EXPORT NMI
+.EXPORT TRANSFER_OAM
 
 .SEGMENT "CDE"
    .PROC NMI
@@ -21,12 +22,7 @@
    BEQ END
 
    ; transfer the local OAM data into the PPU
-   ; set the starting address to write to in the PPUs OAM
-   LDX #$00
-   STX OAM_ADDRESS
-   
-   LDA #>OAM_LOCAL ; load the high byte of the local OAM's address
-   STA OAM_DMA ; set the high byte of the local OAM's address in the OAM_DMA, effectively triggering the DMA
+   JSR TRANSFER_OAM
 
    ; flag the PPU update complete
    LDX #0
@@ -41,4 +37,15 @@
    TAX
    PLA
    RTI
+   .ENDPROC
+
+   .PROC TRANSFER_OAM
+   ; set the starting address to write to in the PPUs OAM
+   LDA #$00
+   STA OAM_ADDRESS
+   
+   LDA #>OAM_LOCAL ; load the high byte of the local OAM's address
+   STA OAM_DMA ; set the high byte of the local OAM's address in the OAM_DMA, effectively triggering the DMA
+
+   RTS
    .ENDPROC

@@ -8,6 +8,7 @@
 .IMPORT PPU_DATA
 .IMPORT PPU_MASK
 .IMPORT PPU_STATUS
+.IMPORT TRANSFER_OAM
 
 .EXPORT RESET
 
@@ -43,8 +44,8 @@
    STA $0700,X
    INX
    BNE CLEAR_RAM
-
-   ; set all the sprites' Y position to 0 in order to render them below the visible screen area when VBlank occurs (the X register contains zero after the overflow in the CLEAR_RAM loop)
+   
+   ; set the Y positions of the sprites in the local OAM to 255 to render them below the screen (the X register contains zero after the overflow in the CLEAR_RAM loop)
    LDA #$FF
    CLEAR_OAM_LOCAL:
    STA OAM_LOCAL,X
@@ -54,9 +55,12 @@
    INX
    BNE CLEAR_OAM_LOCAL
 
-   ; wait for the first 2 VBlanks to let the PPU stabilise before writing the palettes into it's VRAM
+   ; wait for the first 2 VBlanks to let the PPU stabilise before writing to it
    LDY #2
    JSR WAIT_VBLANK_Y_TIMES
+
+   ; transfer the local OAM data into the PPU
+   JSR TRANSFER_OAM
    
    ; transfer the palette to the PPU
    LDA PPU_STATUS ; clear the PPU's internal W register used for tracking whether the following write is the first or the second one (high or low byte)
