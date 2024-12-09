@@ -1,14 +1,18 @@
 .IMPORT DMC_FREQUENCY
 .IMPORT JOYPAD_2
 .IMPORT MAIN
+.IMPORT NAMETABLE_INITIAL
+.IMPORT OAM_INITIAL
 .IMPORT OAM_LOCAL
 .IMPORT PALETTE
 .IMPORT PPU_ADDRESS
 .IMPORT PPU_CONTROL
 .IMPORT PPU_DATA
 .IMPORT PPU_MASK
+.IMPORT PPU_SCROLL
 .IMPORT PPU_STATUS
 .IMPORT TRANSFER_OAM
+.INCLUDE "constants.inc"
 
 .EXPORT RESET
 
@@ -45,15 +49,12 @@
    INX
    BNE CLEAR_RAM
    
-   ; set the Y positions of the sprites in the local OAM to 255 to render them below the screen (the X register contains zero after the overflow in the CLEAR_RAM loop)
-   LDA #$FF
-   CLEAR_OAM_LOCAL:
+   ; intialise the local OAM (the X register contains zero after the overflow in the CLEAR_RAM loop)
+   INITIALISE_LOCAL_OAM:
+   LDA OAM_INITIAL,X
    STA OAM_LOCAL,X
    INX
-   INX
-   INX
-   INX
-   BNE CLEAR_OAM_LOCAL
+   BNE INITIALISE_LOCAL_OAM
 
    ; wait for the first 2 VBlanks to let the PPU stabilise before writing to it
    LDY #2
@@ -61,7 +62,40 @@
 
    ; transfer the local OAM data into the PPU
    JSR TRANSFER_OAM
-   
+
+   ; transfer the initial nametable to the PPU
+   LDA PPU_STATUS ; clear the PPU's internal W register used for tracking whether the following write is the first or the second one (high or low byte)
+
+   ; set the high byte of the target address in the PPU
+   LDA #$20
+   STA PPU_ADDRESS
+
+   STX PPU_ADDRESS ; set the low byte of the target address in the PPU (the X register contains zero after the overflow in the INITIALISE_LOCAL_OAM loop)
+   NAMETABLE_INITIAL_QUARTER_1 = NAMETABLE_INITIAL
+   NAMETABLE_INITIAL_QUARTER_2 = NAMETABLE_INITIAL_QUARTER_1 + QUARTER_NAMETABLE_SIZE
+   NAMETABLE_INITIAL_QUARTER_3 = NAMETABLE_INITIAL_QUARTER_2 + QUARTER_NAMETABLE_SIZE
+   NAMETABLE_INITIAL_QUARTER_4 = NAMETABLE_INITIAL_QUARTER_3 + QUARTER_NAMETABLE_SIZE
+   TRANSFER_NAMETABLE_QUARTER_1:
+   LDA NAMETABLE_INITIAL_QUARTER_1,X
+   STA PPU_DATA
+   INX
+   BNE TRANSFER_NAMETABLE_QUARTER_1
+   TRANSFER_NAMETABLE_QUARTER_2:
+   LDA NAMETABLE_INITIAL_QUARTER_2,X
+   STA PPU_DATA
+   INX
+   BNE TRANSFER_NAMETABLE_QUARTER_2
+   TRANSFER_NAMETABLE_QUARTER_3:
+   LDA NAMETABLE_INITIAL_QUARTER_3,X
+   STA PPU_DATA
+   INX
+   BNE TRANSFER_NAMETABLE_QUARTER_3
+   TRANSFER_NAMETABLE_QUARTER_4:
+   LDA NAMETABLE_INITIAL_QUARTER_4,X
+   STA PPU_DATA
+   INX
+   BNE TRANSFER_NAMETABLE_QUARTER_4
+
    ; transfer the palette to the PPU
    LDA PPU_STATUS ; clear the PPU's internal W register used for tracking whether the following write is the first or the second one (high or low byte)
 
@@ -69,13 +103,20 @@
    LDA #$3F
    STA PPU_ADDRESS
 
-   STX PPU_ADDRESS ; set the low byte of the target address in the PPU (the X register contains zero after the overflow in the CLEAR_OAM loop)
+   STX PPU_ADDRESS ; set the low byte of the target address in the PPU (the X register contains zero after the overflow in the TRANSFER_NAMETABLE_QUARTER_4+ loop)
    TRANSFER_PALETTE:
    LDA PALETTE,X
    STA PPU_DATA
    INX
    CPX #32
    BNE TRANSFER_PALETTE
+
+   ; reset the scroll (writes to PPU_ADDRESS can overwrite the scroll position, so the reset must happen here)
+   LDA PPU_STATUS ; clear the PPU's internal W register used for tracking whether the following write is the first or the second one (high or low byte)
+   LDA #0
+   STA PPU_SCROLL
+   STA PPU_SCROLL
+   STA PPU_CONTROL
 
    ; wait for one more VBlank before enabling renderering and NMIs just to be sure
    LDY #1
