@@ -12,10 +12,6 @@
       {
          "name": "imgui",
          "features": ["sdl3-renderer-binding", "sdl3-binding", "docking-experimental"]
-      },
-      {
-         "name": "nativefiledialog-extended",
-         "platform": "!emscripten"
       }
    ]
 }

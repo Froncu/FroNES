@@ -34,20 +34,6 @@ namespace nes
       ImGui_ImplSDL3_Shutdown();
    }
 
-   Visualiser::Visualiser() noexcept
-   {
-      #ifndef EMSCRIPTEN
-      NFD::Init();
-      #endif
-   }
-
-   Visualiser::~Visualiser() noexcept
-   {
-      #ifndef EMSCRIPTEN
-      NFD::Quit();
-      #endif
-   }
-
    bool Visualiser::update(Memory const& memory, Processor& processor) noexcept
    {
       ImGui_ImplSDLRenderer3_NewFrame();
@@ -114,28 +100,15 @@ namespace nes
                ImGui::InputInt("Bytes per row", &bytes_per_row_, 1, 1);
                ImGui::InputInt("Visible rows", &visible_rows_, 1, 1);
 
-               // TODO: figure out how to upload local files
-               #ifndef EMSCRIPTEN
                if (ImGui::Button("Select program"))
                {
-                  NFD::UniquePath program_path;
-                  std::array constexpr filters{ nfdu8filteritem_t{ "Binaries", "bin" } };
-                  switch (OpenDialog(program_path, filters.data(), static_cast<nfdfiltersize_t>(filters.size())))
-                  {
-                     case NFD_OKAY:
-                        program_path_ = program_path.get();
-                        break;
-
-                     case NFD_CANCEL:
-                        Locator::get<Logger>()->warning("file selection cancelled");
-                        break;
-
-                     default:
-                        Locator::get<Logger>()->error(std::format("file selection error: {}", NFD::GetError()));
-                        break;
-                  }
+                  SDL_DialogFileFilter constexpr filter{ "Binaries", "bin" };
+                  SDL_ShowOpenFileDialog(
+                     [](void* const visualiser, char const* const* file_list, int const)
+                     {
+                        static_cast<Visualiser*>(visualiser)->program_path_ = file_list[0];
+                     }, this, nullptr, &filter, 1, nullptr, false);
                }
-               #endif
 
                if (exists(program_path_))
                {

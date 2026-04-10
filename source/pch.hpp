@@ -32,8 +32,6 @@
 
 #ifdef EMSCRIPTEN
 #include <emscripten/emscripten.h>
-#else
-#include <nfd.hpp>
 #endif
 
 #endif

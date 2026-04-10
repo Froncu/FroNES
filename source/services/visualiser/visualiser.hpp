@@ -41,11 +41,11 @@ namespace nes
       };
 
       public:
-         Visualiser() noexcept;
+         Visualiser() noexcept = default;
          Visualiser(Visualiser const&) = delete;
          Visualiser(Visualiser&&) = delete;
 
-         ~Visualiser() noexcept;
+         ~Visualiser() = default;
 
          Visualiser& operator=(Visualiser const&) = delete;
          Visualiser& operator=(Visualiser&&) = delete;

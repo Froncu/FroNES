@@ -22,10 +22,6 @@ target_link_libraries(${PROJECT_NAME}
    PRIVATE imgui::imgui)
 
 if(NOT EMSCRIPTEN)
-   find_package(nfd CONFIG REQUIRED COMPONENTS nfd-static)
-   target_link_libraries(${PROJECT_NAME}
-      PRIVATE nfd::nfd)
-
    target_precompile_headers(${PROJECT_NAME}
       PRIVATE source/pch.hpp)
 else()
