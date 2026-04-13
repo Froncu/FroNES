@@ -1132,6 +1132,14 @@ namespace nes
 
    Instruction Processor::instruction_from_opcode(Opcode const opcode)
    {
+      auto const throw_unsupported_opcode{
+         [this, opcode] [[noreturn]] -> void
+         {
+            throw UnsupportedOpcode{ static_cast<decltype(program_counter)>(program_counter - 1),
+               static_cast<std::underlying_type_t<Opcode>>(opcode) };
+         }
+      };
+
       switch (opcode)
       {
          case Opcode::BRK_IMPLIED:
@@ -1141,13 +1149,13 @@ namespace nes
             return x_indirect(&Processor::ORA);
 
          case Opcode::JAM_IMPLIED_02:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::SLO_X_INDIRECT:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_ZERO_PAGE_04:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::ORA_ZERO_PAGE:
             return zero_page(&Processor::ORA);
@@ -1156,7 +1164,7 @@ namespace nes
             return zero_page(&Processor::ASL);
 
          case Opcode::SLO_ZERO_PAGE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::PHP_IMPLIED:
             return PHP();
@@ -1168,10 +1176,10 @@ namespace nes
             return accumulator(&Processor::ASL);
 
          case Opcode::ANC_IMMEDIATE_0B:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_ABSOLUTE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::ORA_ABSOLUTE:
             return absolute(&Processor::ORA);
@@ -1180,7 +1188,7 @@ namespace nes
             return absolute(&Processor::ASL);
 
          case Opcode::SLO_ABSOLUTE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::BPL_RELATIVE:
             return relative(&Processor::BPL);
@@ -1189,13 +1197,13 @@ namespace nes
             return indirect_y(&Processor::ORA);
 
          case Opcode::JAM_IMPLIED_12:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::SLO_INDIRECT_Y:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_ZERO_PAGE_X_14:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::ORA_ZERO_PAGE_X:
             return zero_page_indexed(&Processor::ORA, x_);
@@ -1204,7 +1212,7 @@ namespace nes
             return zero_page_indexed(&Processor::ASL, x_);
 
          case Opcode::SLO_ZERO_PAGE_X:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::CLC_IMPLIED:
             return CLC();
@@ -1213,13 +1221,13 @@ namespace nes
             return absolute_indexed(&Processor::ORA, y_);
 
          case Opcode::NOP_IMPLIED_1A:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::SLO_ABSOLUTE_Y:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_ABSOLUTE_X_1C:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::ORA_ABSOLUTE_X:
             return absolute_indexed(&Processor::ORA, x_);
@@ -1228,7 +1236,7 @@ namespace nes
             return absolute_indexed(&Processor::ASL, x_);
 
          case Opcode::SLO_ABSOLUTE_X:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::JSR_ABSOLUTE:
             return JSR();
@@ -1237,10 +1245,10 @@ namespace nes
             return x_indirect(&Processor::AND);
 
          case Opcode::JAM_IMPLIED_22:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::RLA_X_INDIRECT:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::BIT_ZERO_PAGE:
             return zero_page(&Processor::BIT);
@@ -1252,7 +1260,7 @@ namespace nes
             return zero_page(&Processor::ROL);
 
          case Opcode::RLA_ZERO_PAGE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::PLP_IMPLIED:
             return PLP();
@@ -1264,7 +1272,7 @@ namespace nes
             return accumulator(&Processor::ROL);
 
          case Opcode::ANC_IMMEDIATE_2B:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::BIT_ABSOLUTE:
             return absolute(&Processor::BIT);
@@ -1276,7 +1284,7 @@ namespace nes
             return absolute(&Processor::ROL);
 
          case Opcode::RLA_ABSOLUTE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::BMI_RELATIVE:
             return relative(&Processor::BMI);
@@ -1285,13 +1293,13 @@ namespace nes
             return indirect_y(&Processor::AND);
 
          case Opcode::JAM_IMPLIED_32:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::RLA_INDIRECT_Y:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_ZERO_PAGE_X_34:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::AND_ZERO_PAGE_X:
             return zero_page_indexed(&Processor::AND, x_);
@@ -1300,7 +1308,7 @@ namespace nes
             return zero_page_indexed(&Processor::ROL, x_);
 
          case Opcode::RLA_ZERO_PAGE_X:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::SEC_IMPLIED:
             return SEC();
@@ -1309,13 +1317,13 @@ namespace nes
             return absolute_indexed(&Processor::AND, y_);
 
          case Opcode::NOP_IMPLIED_3A:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::RLA_ABSOLUTE_Y:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_ABSOLUTE_X_3C:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::AND_ABSOLUTE_X:
             return absolute_indexed(&Processor::AND, x_);
@@ -1324,7 +1332,7 @@ namespace nes
             return absolute_indexed(&Processor::ROL, x_);
 
          case Opcode::RLA_ABSOLUTE_X:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::RTI_IMPLIED:
             return RTI();
@@ -1333,13 +1341,13 @@ namespace nes
             return x_indirect(&Processor::EOR);
 
          case Opcode::JAM_IMPLIED_42:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::SRE_X_INDIRECT:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_ZERO_PAGE_44:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::EOR_ZERO_PAGE:
             return zero_page(&Processor::EOR);
@@ -1348,7 +1356,7 @@ namespace nes
             return zero_page(&Processor::LSR);
 
          case Opcode::SRE_ZERO_PAGE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::PHA_IMPLIED:
             return PHA();
@@ -1360,7 +1368,7 @@ namespace nes
             return accumulator(&Processor::LSR);
 
          case Opcode::ALR_IMMEDIATE_4B:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::JMP_ABSOLUTE:
             return JMP_absolute();
@@ -1372,7 +1380,7 @@ namespace nes
             return absolute(&Processor::LSR);
 
          case Opcode::SRE_ABSOLUTE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::BVC_RELATIVE:
             return relative(&Processor::BVC);
@@ -1381,13 +1389,13 @@ namespace nes
             return indirect_y(&Processor::EOR);
 
          case Opcode::JAM_IMPLIED_52:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::SRE_INDIRECT_Y:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_ZERO_PAGE_X_54:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::EOR_ZERO_PAGE_X:
             return zero_page_indexed(&Processor::EOR, x_);
@@ -1396,7 +1404,7 @@ namespace nes
             return zero_page_indexed(&Processor::LSR, x_);
 
          case Opcode::SRE_ZERO_PAGE_X:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::CLI_IMPLIED:
             return CLI();
@@ -1405,13 +1413,13 @@ namespace nes
             return absolute_indexed(&Processor::EOR, y_);
 
          case Opcode::NOP_IMPLIED_5A:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::SRE_ABSOLUTE_Y:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_ABSOLUTE_X_5C:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::EOR_ABSOLUTE_X:
             return absolute_indexed(&Processor::EOR, x_);
@@ -1420,7 +1428,7 @@ namespace nes
             return absolute_indexed(&Processor::LSR, x_);
 
          case Opcode::SRE_ABSOLUTE_X:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::RTS_IMPLIED:
             return RTS();
@@ -1429,13 +1437,13 @@ namespace nes
             return x_indirect(&Processor::ADC);
 
          case Opcode::JAM_IMPLIED_62:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::RRA_X_INDIRECT:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_ZERO_PAGE_64:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::ADC_ZERO_PAGE:
             return zero_page(&Processor::ADC);
@@ -1444,7 +1452,7 @@ namespace nes
             return zero_page(&Processor::ROR);
 
          case Opcode::RRA_ZERO_PAGE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::PLA_IMPLIED:
             return PLA();
@@ -1456,7 +1464,7 @@ namespace nes
             return accumulator(&Processor::ROR);
 
          case Opcode::ARR_IMMEDIATE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::JMP_INDIRECT:
             return JMP_indirect();
@@ -1468,7 +1476,7 @@ namespace nes
             return absolute(&Processor::ROR);
 
          case Opcode::RRA_ABSOLUTE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::BVS_RELATIVE:
             return relative(&Processor::BVS);
@@ -1477,13 +1485,13 @@ namespace nes
             return indirect_y(&Processor::ADC);
 
          case Opcode::JAM_IMPLIED_72:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::RRA_INDIRECT_Y:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_ZERO_PAGE_X_74:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::ADC_ZERO_PAGE_X:
             return zero_page_indexed(&Processor::ADC, x_);
@@ -1492,7 +1500,7 @@ namespace nes
             return zero_page_indexed(&Processor::ROR, x_);
 
          case Opcode::RRA_ZERO_PAGE_X:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::SEI_IMPLIED:
             return SEI();
@@ -1501,13 +1509,13 @@ namespace nes
             return absolute_indexed(&Processor::ADC, y_);
 
          case Opcode::NOP_IMPLIED_7A:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::RRA_ABSOLUTE_Y:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_ABSOLUTE_X_7C:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::ADC_ABSOLUTE_X:
             return absolute_indexed(&Processor::ADC, x_);
@@ -1516,19 +1524,19 @@ namespace nes
             return absolute_indexed(&Processor::ROR, x_);
 
          case Opcode::RRA_ABSOLUTE_X:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_IMMEDIATE_80:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::STA_X_INDIRECT:
             return x_indirect(&Processor::STA);
 
          case Opcode::NOP_IMMEDIATE_82:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::SAX_X_INDIRECT:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::STY_ZERO_PAGE:
             return zero_page(&Processor::STY);
@@ -1540,19 +1548,19 @@ namespace nes
             return zero_page(&Processor::STX);
 
          case Opcode::SAX_ZERO_PAGE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::DEY_IMPLIED:
             return DEY();
 
          case Opcode::NOP_IMMEDIATE_89:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::TXA_IMPLIED:
             return TXA();
 
          case Opcode::ANE_IMMEDIATE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::STY_ABSOLUTE:
             return absolute(&Processor::STY);
@@ -1564,7 +1572,7 @@ namespace nes
             return absolute(&Processor::STX);
 
          case Opcode::SAX_ABSOLUTE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::BCC_RELATIVE:
             return relative(&Processor::BCC);
@@ -1573,10 +1581,10 @@ namespace nes
             return indirect_y(&Processor::STA);
 
          case Opcode::JAM_IMPLIED_92:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::SHA_INDIRECT_Y:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::STY_ZERO_PAGE_X:
             return zero_page_indexed(&Processor::STY, x_);
@@ -1588,7 +1596,7 @@ namespace nes
             return zero_page_indexed(&Processor::STX, y_);
 
          case Opcode::SAX_ZERO_PAGE_Y:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::TYA_IMPLIED:
             return TYA();
@@ -1600,19 +1608,19 @@ namespace nes
             return TXS();
 
          case Opcode::TAS_ABSOLUTE_Y:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::SHY_ABSOLUTE_X:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::STA_ABSOLUTE_X:
             return absolute_indexed(&Processor::STA, x_);
 
          case Opcode::SHX_ABSOLUTE_Y:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::SHA_ABSOLUTE_Y:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::LDY_IMMEDIATE:
             return immediate(&Processor::LDY);
@@ -1624,7 +1632,7 @@ namespace nes
             return immediate(&Processor::LDX);
 
          case Opcode::LAX_X_INDIRECT:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::LDY_ZERO_PAGE:
             return zero_page(&Processor::LDY);
@@ -1636,7 +1644,7 @@ namespace nes
             return zero_page(&Processor::LDX);
 
          case Opcode::LAX_ZERO_PAGE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::TAY_IMPLIED:
             return TAY();
@@ -1648,7 +1656,7 @@ namespace nes
             return TAX();
 
          case Opcode::LXA_IMMEDIATE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::LDY_ABSOLUTE:
             return absolute(&Processor::LDY);
@@ -1660,7 +1668,7 @@ namespace nes
             return absolute(&Processor::LDX);
 
          case Opcode::LAX_ABSOLUTE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::BCS_RELATIVE:
             return relative(&Processor::BCS);
@@ -1669,10 +1677,10 @@ namespace nes
             return indirect_y(&Processor::LDA);
 
          case Opcode::JAM_IMPLIED_B2:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::LAX_INDIRECT_Y:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::LDY_ZERO_PAGE_X:
             return zero_page_indexed(&Processor::LDY, x_);
@@ -1684,7 +1692,7 @@ namespace nes
             return zero_page_indexed(&Processor::LDX, y_);
 
          case Opcode::LAX_ZERO_PAGE_Y:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::CLV_IMPLIED:
             return CLV();
@@ -1696,7 +1704,7 @@ namespace nes
             return TSX();
 
          case Opcode::LAS_ABSOLUTE_Y:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::LDY_ABSOLUTE_X:
             return absolute_indexed(&Processor::LDY, x_);
@@ -1708,7 +1716,7 @@ namespace nes
             return absolute_indexed(&Processor::LDX, y_);
 
          case Opcode::LAX_ABSOLUTE_Y:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::CPY_IMMEDIATE:
             return immediate(&Processor::CPY);
@@ -1717,10 +1725,10 @@ namespace nes
             return x_indirect(&Processor::CMP);
 
          case Opcode::NOP_IMMEDIATE_C2:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::DCP_X_INDIRECT:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::CPY_ZERO_PAGE:
             return zero_page(&Processor::CPY);
@@ -1732,7 +1740,7 @@ namespace nes
             return zero_page(&Processor::DEC);
 
          case Opcode::DCP_ZERO_PAGE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::INY_IMPLIED:
             return INY();
@@ -1744,7 +1752,7 @@ namespace nes
             return DEX();
 
          case Opcode::SBX_IMMEDIATE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::CPY_ABSOLUTE:
             return absolute(&Processor::CPY);
@@ -1756,7 +1764,7 @@ namespace nes
             return absolute(&Processor::DEC);
 
          case Opcode::DCP_ABSOLUTE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::BNE_RELATIVE:
             return relative(&Processor::BNE);
@@ -1765,13 +1773,13 @@ namespace nes
             return indirect_y(&Processor::CMP);
 
          case Opcode::JAM_IMPLIED_D2:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::DCP_INDIRECT_Y:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_ZERO_PAGE_X_D4:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::CMP_ZERO_PAGE_X:
             return zero_page_indexed(&Processor::CMP, x_);
@@ -1780,7 +1788,7 @@ namespace nes
             return zero_page_indexed(&Processor::DEC, x_);
 
          case Opcode::DCP_ZERO_PAGE_X:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::CLD_IMPLIED:
             return CLD();
@@ -1789,13 +1797,13 @@ namespace nes
             return absolute_indexed(&Processor::CMP, y_);
 
          case Opcode::NOP_IMPLIED_DA:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::DCP_ABSOLUTE_Y:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_ABSOLUTE_X_DC:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::CMP_ABSOLUTE_X:
             return absolute_indexed(&Processor::CMP, x_);
@@ -1804,7 +1812,7 @@ namespace nes
             return absolute_indexed(&Processor::DEC, x_);
 
          case Opcode::DCP_ABSOLUTE_X:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::CPX_IMMEDIATE:
             return immediate(&Processor::CPX);
@@ -1813,10 +1821,10 @@ namespace nes
             return x_indirect(&Processor::SBC);
 
          case Opcode::NOP_IMMEDIATE_E2:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::ISC_X_INDIRECT:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::CPX_ZERO_PAGE:
             return zero_page(&Processor::CPX);
@@ -1828,7 +1836,7 @@ namespace nes
             return zero_page(&Processor::INC);
 
          case Opcode::ISC_ZERO_PAGE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::INX_IMPLIED:
             return INX();
@@ -1840,7 +1848,7 @@ namespace nes
             return NOP();
 
          case Opcode::SBC_IMMEDIATE_EB:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::CPX_ABSOLUTE:
             return absolute(&Processor::CPX);
@@ -1852,7 +1860,7 @@ namespace nes
             return absolute(&Processor::INC);
 
          case Opcode::ISC_ABSOLUTE:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::BEQ_RELATIVE:
             return relative(&Processor::BEQ);
@@ -1861,13 +1869,13 @@ namespace nes
             return indirect_y(&Processor::SBC);
 
          case Opcode::JAM_IMPLIED_F2:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::ISC_INDIRECT_Y:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_ZERO_PAGE_X_F4:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::SBC_ZERO_PAGE_X:
             return zero_page_indexed(&Processor::SBC, x_);
@@ -1876,7 +1884,7 @@ namespace nes
             return zero_page_indexed(&Processor::INC, x_);
 
          case Opcode::ISC_ZERO_PAGE_X:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::SED_IMPLIED:
             return SED();
@@ -1885,13 +1893,13 @@ namespace nes
             return absolute_indexed(&Processor::SBC, y_);
 
          case Opcode::NOP_IMPLIED_FA:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::ISC_ABSOLUTE_Y:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          case Opcode::NOP_ABSOLUTE_X_FC:
-            return Instruction{ {} };
+            throw_unsupported_opcode();
 
          case Opcode::SBC_ABSOLUTE_X:
             return absolute_indexed(&Processor::SBC, x_);
@@ -1900,13 +1908,10 @@ namespace nes
             return absolute_indexed(&Processor::INC, x_);
 
          case Opcode::ISC_ABSOLUTE_X:
-            return Instruction{ {} };
+            [[fallthrough]];
 
          default:
-            throw UnsupportedOpcode{
-               static_cast<decltype(program_counter)>(program_counter - 1),
-               static_cast<std::underlying_type_t<Opcode>>(opcode)
-            };
+            throw_unsupported_opcode();
       }
    }
 
