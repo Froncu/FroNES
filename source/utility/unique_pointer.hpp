@@ -5,7 +5,7 @@
 
 namespace nes
 {
-   template <typename Resource>
+   template<typename Resource>
    using UniquePointer = std::unique_ptr<Resource, std::function<void(Resource*)>>;
 }
 

@@ -4,18 +4,18 @@
 
 namespace std
 {
-   size_t hash<source_location>::operator()(source_location const& location) const noexcept
+   auto hash<source_location>::operator()(source_location const& location) const -> size_t
    {
-      size_t const hash_1{ nes::hash(location.file_name()) };
-      size_t const hash_2{ nes::hash(location.line()) };
-      size_t const hash_3{ nes::hash(location.column()) };
-      size_t const hash_4{ nes::hash(location.function_name()) };
+      size_t const hash_1{nes::hash(location.file_name())};
+      size_t const hash_2{nes::hash(location.line())};
+      size_t const hash_3{nes::hash(location.column())};
+      size_t const hash_4{nes::hash(location.function_name())};
 
       size_t seed{};
       auto const generate{
-         [&seed](size_t const hash)
+         [&seed](size_t const hash) -> void
          {
-            seed ^= hash + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            seed ^= hash + 0x9e'37'79'b9 + (seed << 6) + (seed >> 2);
          }
       };
 
@@ -27,20 +27,21 @@ namespace std
       return seed;
    }
 
-   bool equal_to<source_location>::operator()(source_location const& location_a,
-      source_location const& location_b) const noexcept
+   auto equal_to<source_location>::operator()(source_location const& location_a, source_location const& location_b) const
+      -> bool
    {
-      if (location_a.line() not_eq location_b.line() or
-         location_a.column() not_eq location_b.column())
+      if (location_a.line() not_eq location_b.line() or location_a.column() not_eq location_b.column())
+      {
          return false;
+      }
 
-      if (location_a.file_name() == location_b.file_name() and
-         location_a.function_name() == location_b.function_name())
+      if (location_a.file_name() == location_b.file_name() and location_a.function_name() == location_b.function_name())
+      {
          return true;
+      }
 
-      return
-         not std::strcmp(location_a.file_name(), location_b.file_name()) and
-         not std::strcmp(location_a.function_name(), location_b.function_name());
+      return not std::strcmp(location_a.file_name(), location_b.file_name())
+         and not std::strcmp(location_a.function_name(), location_b.function_name());
    }
 }
 
@@ -49,14 +50,14 @@ namespace nes
    Logger::~Logger()
    {
       {
-         std::lock_guard const lock{ mutex_ };
+         std::scoped_lock const lock{mutex_};
          run_thread_ = false;
       }
 
       condition_.notify_one();
    }
 
-   void Logger::log(Payload const& payload)
+   auto Logger::log(Payload const& payload) -> void
    {
       std::ostream* output_stream{};
       switch (payload.type)
@@ -92,30 +93,26 @@ namespace nes
             break;
       }
 
-      std::string const local_time{ std::format("{:%H:%M:%S}", std::chrono::system_clock::now()) };
+      std::string const local_time{std::format("{:%H:%M:%S}", std::chrono::system_clock::now())};
 
       if constexpr (MINGW)
-         *output_stream << std::format(
-            "\033[{}m>> {}({})\n[{}]: {}\033[0m\n",
-            esc_sequence,
-            payload.location.file_name(),
-            payload.location.line(),
-            local_time,
-            payload.message);
+      {
+         *output_stream << std::format("\033[{}m>> {}({})\n[{}]: {}\033[0m\n", esc_sequence, payload.location.file_name(),
+            payload.location.line(), local_time, payload.message);
+      }
       else
-         std::println(*output_stream,
-            "\033[{}m>> {}({})\n[{}]: {}\033[0m",
-            esc_sequence,
-            payload.location.file_name(),
-            payload.location.line(),
-            local_time,
-            payload.message);
+      {
+         std::println(*output_stream, "\033[{}m>> {}({})\n[{}]: {}\033[0m", esc_sequence, payload.location.file_name(),
+            payload.location.line(), local_time, payload.message);
+      }
    }
 
-   void Logger::log_once(Payload const& payload)
+   auto Logger::log_once(Payload const& payload) -> void
    {
       if (not location_entries_.insert(payload.location).second)
+      {
          return;
+      }
 
       return log(payload);
    }

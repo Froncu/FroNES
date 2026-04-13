@@ -6,21 +6,20 @@
 
 namespace nes
 {
-   class EmulationException : public EmulatorException
+   class EmulationException: public EmulatorException
    {
-      public:
-         EmulationException(ProgramCounter program_counter, std::string what,
-            std::source_location location = std::source_location::current());
-         explicit EmulationException(ProgramCounter program_counter);
-         EmulationException(EmulationException const&) = default;
-         EmulationException(EmulationException&&) = default;
+   public:
+      EmulationException(ProgramCounter program_counter, std::string_view what,
+         std::source_location const& location = std::source_location::current());
+      EmulationException(EmulationException const&) = default;
+      EmulationException(EmulationException&&) = delete;
 
-         virtual ~EmulationException() override = default;
+      ~EmulationException() override = default;
 
-         EmulationException& operator=(EmulationException const&) = delete;
-         EmulationException& operator=(EmulationException&&) = delete;
+      auto operator=(EmulationException const&) -> EmulationException& = delete;
+      auto operator=(EmulationException&&) -> EmulationException& = delete;
 
-         ProgramCounter const program_counter;
+      ProgramCounter const program_counter;
    };
 }
 

@@ -8,25 +8,25 @@ namespace nes
 {
    class Memory final
    {
-      public:
-         Memory() noexcept = default;
-         Memory(Memory const&) = delete;
-         Memory(Memory&&) = delete;
+   public:
+      Memory() = default;
+      Memory(Memory const&) = delete;
+      Memory(Memory&&) = delete;
 
-         ~Memory() noexcept = default;
+      ~Memory() = default;
 
-         Memory& operator=(Memory const&) = delete;
-         Memory& operator=(Memory&&) = delete;
+      auto operator=(Memory const&) -> Memory& = delete;
+      auto operator=(Memory&&) -> Memory& = delete;
 
-         void load_program(std::filesystem::path const& path, Word load_address = 0x0000) noexcept;
+      auto load_program(std::filesystem::path const& path, Word load_address = 0x00'00) -> void;
 
-         void write(Word address, Byte data) noexcept;
-         [[nodiscard]] Byte read(Word address) const noexcept;
+      auto write(Word address, Byte data) -> void;
+      [[nodiscard]] auto read(Word address) const -> Byte;
 
-         [[nodiscard]] std::size_t size() const noexcept;
+      [[nodiscard]] auto size() const -> std::size_t;
 
-      private:
-         std::array<Byte, std::numeric_limits<ProgramCounter>::max() + 1> data_{};
+   private:
+      std::array<Byte, std::numeric_limits<ProgramCounter>::max() + 1> data_{};
    };
 }
 

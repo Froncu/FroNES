@@ -3,12 +3,12 @@
 namespace nes
 {
    Instruction::Instruction(std::coroutine_handle<promise_type> handle)
-      : handle_{ std::move(handle) }
+      : handle_{handle}
    {
    }
 
    Instruction::Instruction(Instruction&& other) noexcept
-      : handle_{ std::exchange(other.handle_, nullptr) }
+      : handle_{std::exchange(other.handle_, nullptr)}
    {
    }
 
@@ -17,51 +17,53 @@ namespace nes
       destroy_handle();
    }
 
-   Instruction& Instruction::operator=(Instruction&& other) noexcept
+   auto Instruction::operator=(Instruction&& other) noexcept -> Instruction&
    {
       destroy_handle();
       handle_ = std::exchange(other.handle_, nullptr);
       return *this;
    }
 
-   bool Instruction::tick() const
+   auto Instruction::tick() const -> bool
    {
       handle_.resume();
       return handle_.done();
    }
 
-   std::optional<Instruction>&& Instruction::prefetched_instruction() const
+   auto Instruction::prefetched_instruction() const -> std::optional<Instruction>&&
    {
       return std::move(handle_.promise().prefetched_instruction);
    }
 
-   void Instruction::destroy_handle() const
+   auto Instruction::destroy_handle() const -> void
    {
       if (handle_)
+      {
          handle_.destroy();
+      }
    }
 
-   std::suspend_always Instruction::promise_type::initial_suspend() noexcept
+   auto Instruction::promise_type::initial_suspend() -> std::suspend_always
    {
       return {};
    }
 
-   std::suspend_always Instruction::promise_type::final_suspend() noexcept
+   auto Instruction::promise_type::final_suspend() noexcept -> std::suspend_always
    {
       return {};
    }
 
-   void Instruction::promise_type::unhandled_exception()
+   auto Instruction::promise_type::unhandled_exception() -> void
    {
    }
 
-   void Instruction::promise_type::return_value(std::optional<Instruction> instruction)
+   auto Instruction::promise_type::return_value(std::optional<Instruction> instruction) -> void
    {
       prefetched_instruction = std::move(instruction);
    }
 
-   Instruction Instruction::promise_type::get_return_object()
+   auto Instruction::promise_type::get_return_object() -> Instruction
    {
-      return Instruction{ std::coroutine_handle<promise_type>::from_promise(*this) };
+      return Instruction{std::coroutine_handle<promise_type>::from_promise(*this)};
    }
 }

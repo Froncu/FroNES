@@ -2,23 +2,23 @@
 
 namespace nes
 {
-   void Memory::load_program(std::filesystem::path const& path, Word const load_address) noexcept
+   void Memory::load_program(std::filesystem::path const& path, Word const load_address)
    {
-      std::ifstream in{ path.c_str(), std::ios::binary };
-      in.read(reinterpret_cast<char*>(&data_[load_address]), data_.size() - load_address);
+      std::basic_ifstream<Byte, std::char_traits<Byte>> in{path.c_str(), std::ios::binary};
+      in.read(&data_[load_address], static_cast<std::streamsize>(data_.size() - load_address));
    }
 
-   void Memory::write(Word const address, Byte const data) noexcept
+   void Memory::write(Word const address, Byte const data)
    {
       data_[address] = data;
    }
 
-   Byte Memory::read(Word const address) const noexcept
+   auto Memory::read(Word const address) const -> Byte
    {
       return data_[address];
    }
 
-   std::size_t Memory::size() const noexcept
+   auto Memory::size() const -> std::size_t
    {
       return data_.size();
    }

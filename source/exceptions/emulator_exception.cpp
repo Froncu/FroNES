@@ -2,14 +2,9 @@
 
 namespace nes
 {
-   EmulatorException::EmulatorException(std::string what, std::source_location location)
-      : std::runtime_error{ std::move(what) }
-      , location_{ std::move(location) }
+   EmulatorException::EmulatorException(std::string_view const what, std::source_location const& location)
+      : std::runtime_error{what.data()}
+      , location{location}
    {
-   }
-
-   std::source_location const& EmulatorException::location() const
-   {
-      return location_;
    }
 }

@@ -11,95 +11,95 @@ namespace nes
    {
       class SDL_Context final
       {
-         public:
-            SDL_Context() noexcept;
-            SDL_Context(SDL_Context const&) = delete;
-            SDL_Context(SDL_Context&&) = delete;
+      public:
+         SDL_Context();
+         SDL_Context(SDL_Context const&) = delete;
+         SDL_Context(SDL_Context&&) = delete;
 
-            ~SDL_Context() noexcept;
+         ~SDL_Context();
 
-            SDL_Context& operator=(SDL_Context const&) = delete;
-            SDL_Context& operator=(SDL_Context&&) = delete;
+         auto operator=(SDL_Context const&) -> SDL_Context& = delete;
+         auto operator=(SDL_Context&&) -> SDL_Context& = delete;
 
-         private:
-            SDL_InitFlags const initialisation_flags_{ SDL_INIT_VIDEO };
+      private:
+         SDL_InitFlags const initialisation_flags_{SDL_INIT_VIDEO};
       };
 
       class ImGuiBackend final
       {
-         public:
-            ImGuiBackend(SDL_Window& window, SDL_Renderer& renderer) noexcept;
-            ImGuiBackend(ImGuiBackend const&) = delete;
-            ImGuiBackend(ImGuiBackend&&) = delete;
+      public:
+         ImGuiBackend(SDL_Window& window, SDL_Renderer& renderer);
+         ImGuiBackend(ImGuiBackend const&) = delete;
+         ImGuiBackend(ImGuiBackend&&) = delete;
 
-            ~ImGuiBackend() noexcept;
+         ~ImGuiBackend();
 
-            ImGuiBackend& operator=(ImGuiBackend const&) = delete;
-            ImGuiBackend& operator=(ImGuiBackend&&) = delete;
+         auto operator=(ImGuiBackend const&) -> ImGuiBackend& = delete;
+         auto operator=(ImGuiBackend&&) -> ImGuiBackend& = delete;
 
-            UniquePointer<ImGuiContext> const context{ ImGui::CreateContext(), ImGui::DestroyContext };
+         UniquePointer<ImGuiContext> const context{ImGui::CreateContext(), ImGui::DestroyContext};
       };
 
-      public:
-         Visualiser() noexcept = default;
-         Visualiser(Visualiser const&) = delete;
-         Visualiser(Visualiser&&) = delete;
+   public:
+      Visualiser() = default;
+      Visualiser(Visualiser const&) = delete;
+      Visualiser(Visualiser&&) = delete;
 
-         ~Visualiser() = default;
+      ~Visualiser() = default;
 
-         Visualiser& operator=(Visualiser const&) = delete;
-         Visualiser& operator=(Visualiser&&) = delete;
+      auto operator=(Visualiser const&) -> Visualiser& = delete;
+      auto operator=(Visualiser&&) -> Visualiser& = delete;
 
-         [[nodiscard]] bool update(Memory const& memory, Processor& processor) noexcept;
+      [[nodiscard]] auto update(Memory const& memory, Processor& processor) -> bool;
 
-         [[nodiscard]] bool tick_repeatedly() const noexcept;
-         [[nodiscard]] bool tick_once() const noexcept;
-         [[nodiscard]] bool step() const noexcept;
-         [[nodiscard]] bool reset() const noexcept;
+      [[nodiscard]] auto tick_repeatedly() const -> bool;
+      [[nodiscard]] auto tick_once() const -> bool;
+      [[nodiscard]] auto step() const -> bool;
+      [[nodiscard]] auto reset() const -> bool;
 
-         [[nodiscard]] std::filesystem::path const& program_path() const noexcept;
-         [[nodiscard]] Word program_load_address() const noexcept;
-         [[nodiscard]] bool load_program_requested() const noexcept;
+      [[nodiscard]] auto program_path() const -> std::filesystem::path const&;
+      [[nodiscard]] auto program_load_address() const -> Word;
+      [[nodiscard]] auto load_program_requested() const -> bool;
 
-      private:
-         SDL_Context const context_{};
+   private:
+      SDL_Context const context_{};
 
-         UniquePointer<SDL_Window> const window_{
-            []
-            {
-               SDL_Window* const window{ SDL_CreateWindow("Emulator", 1280, 720, SDL_WINDOW_RESIZABLE) };
-               runtime_assert(window, std::format("failed to create window ({})", SDL_GetError()));
+      UniquePointer<SDL_Window> const window_{
+         [] -> SDL_Window*
+         {
+            SDL_Window* const window{SDL_CreateWindow("Emulator", 1'280, 720, SDL_WINDOW_RESIZABLE)};
+            runtime_assert(window, std::format("failed to create window ({})", SDL_GetError()));
 
-               return window;
-            }(),
-            SDL_DestroyWindow
-         };
+            return window;
+         }(),
+         SDL_DestroyWindow
+      };
 
-         UniquePointer<SDL_Renderer> const renderer_{
-            [this]
-            {
-               SDL_Renderer* const renderer{ SDL_CreateRenderer(window_.get(), nullptr) };
-               runtime_assert(renderer, std::format("failed to create renderer ({})", SDL_GetError()));
+      UniquePointer<SDL_Renderer> const renderer_{
+         [this] -> SDL_Renderer*
+         {
+            SDL_Renderer* const renderer{SDL_CreateRenderer(window_.get(), nullptr)};
+            runtime_assert(renderer, std::format("failed to create renderer ({})", SDL_GetError()));
 
-               return renderer;
-            }(),
-            SDL_DestroyRenderer
-         };
+            return renderer;
+         }(),
+         SDL_DestroyRenderer
+      };
 
-         ImGuiBackend const imgui_backend_{ *window_, *renderer_ };
+      ImGuiBackend const imgui_backend_{*window_, *renderer_};
 
-         Word jump_address_{};
-         int bytes_per_row_{ 16 };
-         int visible_rows_{ 16 };
-         bool jump_requested_{};
-         std::filesystem::path program_path_{};
-         Word program_load_address_{};
-         bool load_program_requested_{};
+      Word jump_address_{};
+      int bytes_per_row_{16};
+      int visible_rows_{16};
+      bool jump_requested_{};
+      std::filesystem::path program_path_{};
+      Word program_load_address_{};
+      bool load_program_requested_{};
 
-         bool tick_repeatedly_{};
-         bool tick_once_{};
-         bool step_{};
-         bool reset_{};
+      bool tick_repeatedly_{};
+      bool tick_once_{};
+      bool step_{};
+      bool reset_{};
    };
 }
 

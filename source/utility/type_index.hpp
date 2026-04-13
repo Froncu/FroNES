@@ -5,8 +5,8 @@
 
 namespace nes
 {
-   template <typename Type>
-   std::type_index type_index()
+   template<typename Type>
+   auto type_index() -> std::type_index
    {
       return typeid(Type);
    }

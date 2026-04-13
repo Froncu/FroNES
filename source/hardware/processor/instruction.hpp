@@ -7,35 +7,35 @@ namespace nes
 {
    class Instruction final
    {
-      public:
-         struct promise_type;
+   public:
+      struct promise_type;
 
-         explicit Instruction(std::coroutine_handle<promise_type> handle);
-         Instruction(Instruction const&) = delete;
-         Instruction(Instruction&& other) noexcept;
+      explicit Instruction(std::coroutine_handle<promise_type> handle);
+      Instruction(Instruction const&) = delete;
+      Instruction(Instruction&& other) noexcept;
 
-         ~Instruction();
+      ~Instruction();
 
-         Instruction& operator=(Instruction const&) = delete;
-         Instruction& operator=(Instruction&& other) noexcept;
+      auto operator=(Instruction const&) -> Instruction& = delete;
+      auto operator=(Instruction&& other) noexcept -> Instruction&;
 
-         [[nodiscard]] bool tick() const;
-         [[nodiscard]] std::optional<Instruction>&& prefetched_instruction() const;
+      [[nodiscard]] auto tick() const -> bool;
+      [[nodiscard]] auto prefetched_instruction() const -> std::optional<Instruction>&&;
 
-      private:
-         void destroy_handle() const;
+   private:
+      auto destroy_handle() const -> void;
 
-         std::coroutine_handle<promise_type> handle_;
+      std::coroutine_handle<promise_type> handle_;
    };
 
    struct Instruction::promise_type
    {
-      static std::suspend_always initial_suspend() noexcept;
-      static std::suspend_always final_suspend() noexcept;
-      static void unhandled_exception();
-      void return_value(std::optional<Instruction> instruction);
+      static auto initial_suspend() -> std::suspend_always;
+      static auto final_suspend() noexcept -> std::suspend_always;
+      static auto unhandled_exception() -> void;
+      auto return_value(std::optional<Instruction> instruction) -> void;
 
-      Instruction get_return_object();
+      auto get_return_object() -> Instruction;
 
       std::optional<Instruction> prefetched_instruction{};
    };

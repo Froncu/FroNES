@@ -3,15 +3,19 @@
 
 namespace nes
 {
-   bool Application::update()
+   auto Application::update() -> bool
    {
       if (not visualiser_.update(memory_, processor_))
+      {
          return false;
+      }
 
       if (visualiser_.tick_repeatedly())
       {
          if (not emulation_thread_.joinable())
-            emulation_thread_ = std::jthread{ std::bind_front(&Application::try_tick_repeatedly, this) };
+         {
+            emulation_thread_ = std::jthread{std::bind_front(&Application::try_tick_repeatedly, this)};
+         }
       }
       else if (emulation_thread_.joinable())
       {
@@ -19,24 +23,33 @@ namespace nes
          emulation_thread_.join();
       }
       else if (visualiser_.tick_once())
+      {
          try_tick();
+      }
       else if (visualiser_.step())
+      {
          try_step();
+      }
       else if (visualiser_.reset())
+      {
          processor_.reset();
+      }
 
       if (visualiser_.load_program_requested())
+      {
          memory_.load_program(visualiser_.program_path(), visualiser_.program_load_address());
+      }
 
       return true;
    }
 
-   void Application::handle_exception(UnsupportedOpcode const& exception, std::source_location source_location) const
+   auto Application::handle_exception(UnsupportedOpcode const& exception) const -> void
    {
-      logger_.error(exception.what(), false, std::move(source_location));
+      logger_.error(exception.what(), false, exception.location);
    }
 
-   void Application::try_tick() try
+   auto Application::try_tick() -> void
+   try
    {
       processor_.tick();
    }
@@ -45,15 +58,20 @@ namespace nes
       handle_exception(exception);
    }
 
-   void Application::try_tick_repeatedly(std::stop_token const& stop_token)
+   auto Application::try_tick_repeatedly(std::stop_token const& stop_token) -> void
    {
       while (not stop_token.stop_requested())
+      {
          try_tick();
+      }
    }
 
-   void Application::try_step() try
+   auto Application::try_step() -> void
+   try
    {
-      while (not processor_.tick());
+      while (not processor_.tick())
+      {
+      }
    }
    catch (UnsupportedOpcode const& exception)
    {

@@ -3,17 +3,17 @@
 
 namespace nes
 {
-   #ifdef NDEBUG
-   auto constexpr DEBUG{ false };
-   #else
-   auto constexpr DEBUG{ true };
-   #endif
+#ifdef NDEBUG
+   constexpr auto DEBUG{false};
+#else
+   constexpr auto DEBUG{true};
+#endif
 
-   #ifdef __MINGW32__
-   auto constexpr MINGW{ true };
-   #else
-   auto constexpr MINGW{ false };
-   #endif
+#ifdef __MINGW32__
+   constexpr auto MINGW{true};
+#else
+   constexpr auto MINGW{false};
+#endif
 }
 
 #endif

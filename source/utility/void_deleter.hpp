@@ -3,7 +3,7 @@
 
 namespace nes
 {
-   template <typename Type>
+   template<typename Type>
    static void void_deleter(void* const value)
    {
       delete static_cast<Type* const>(value);

@@ -2,39 +2,39 @@
 
 namespace nes
 {
-   Visualiser::SDL_Context::SDL_Context() noexcept
+   Visualiser::SDL_Context::SDL_Context()
    {
-      bool const succeeded{ SDL_InitSubSystem(initialisation_flags_) };
+      bool const succeeded{SDL_InitSubSystem(initialisation_flags_)};
       runtime_assert(succeeded, std::format("failed to initialise SDL ({})", SDL_GetError()));
    }
 
-   Visualiser::SDL_Context::~SDL_Context() noexcept
+   Visualiser::SDL_Context::~SDL_Context()
    {
       SDL_QuitSubSystem(initialisation_flags_);
    }
 
-   Visualiser::ImGuiBackend::ImGuiBackend(SDL_Window& window, SDL_Renderer& renderer) noexcept
+   Visualiser::ImGuiBackend::ImGuiBackend(SDL_Window& window, SDL_Renderer& renderer)
    {
-      bool succeeded{ ImGui_ImplSDL3_InitForSDLRenderer(&window, &renderer) };
+      bool succeeded{ImGui_ImplSDL3_InitForSDLRenderer(&window, &renderer)};
       runtime_assert(succeeded, "failed to initialize ImGui's SDL implementation");
 
       succeeded = ImGui_ImplSDLRenderer3_Init(&renderer);
       runtime_assert(succeeded, "failed to initialize ImGui for SDL renderer");
 
-      ImGuiIO& input_output{ ImGui::GetIO() };
+      ImGuiIO& input_output{ImGui::GetIO()};
       input_output.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
       input_output.ConfigDockingWithShift = true;
       input_output.ConfigDockingTransparentPayload = true;
       input_output.FontGlobalScale = SDL_GetWindowDisplayScale(&window);
    }
 
-   Visualiser::ImGuiBackend::~ImGuiBackend() noexcept
+   Visualiser::ImGuiBackend::~ImGuiBackend()
    {
       ImGui_ImplSDLRenderer3_Shutdown();
       ImGui_ImplSDL3_Shutdown();
    }
 
-   bool Visualiser::update(Memory const& memory, Processor& processor) noexcept
+   auto Visualiser::update(Memory const& memory, Processor& processor) -> bool
    {
       ImGui_ImplSDLRenderer3_NewFrame();
       ImGui_ImplSDL3_NewFrame();
@@ -45,8 +45,8 @@ namespace nes
             ImGui::Begin("Memory", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse);
             {
                // TODO: the MemoryRegion's height is not correct
-               float const item_height{ ImGui::GetTextLineHeightWithSpacing() };
-               ImGui::BeginChild("MemoryRegion", { 0, item_height * visible_rows_ }, ImGuiChildFlags_Borders,
+               float const item_height{ImGui::GetTextLineHeightWithSpacing()};
+               ImGui::BeginChild("MemoryRegion", {0, item_height * static_cast<float>(visible_rows_)}, ImGuiChildFlags_Borders,
                   ImGuiWindowFlags_HorizontalScrollbar);
                {
                   ImGuiListClipper clipper{};
@@ -55,40 +55,52 @@ namespace nes
                      if (jump_requested_)
                      {
                         jump_address_ = std::clamp(jump_address_, {}, static_cast<Word>(memory.size() - 1));
-                        float const target_row{ jump_address_ / bytes_per_row_ - visible_rows_ / 2.0f + 0.5f };
-                        ImGui::SetScrollY(target_row * item_height);
+                        int const target_row{jump_address_ / bytes_per_row_};
+                        float const centered_row{
+                           static_cast<float>(target_row) - static_cast<float>(visible_rows_) / 2.0f + 0.5f
+                        };
+                        ImGui::SetScrollY(centered_row * item_height);
                      }
 
                      while (clipper.Step())
+                     {
                         for (int row_index = clipper.DisplayStart; row_index < clipper.DisplayEnd; ++row_index)
                         {
-                           int const base_column_index{ row_index * bytes_per_row_ };
+                           int const base_column_index{row_index * bytes_per_row_};
                            ImGui::Text("%04X:", base_column_index);
                            ImGui::SameLine();
 
-                           int const max_column_index{
-                              std::min((row_index + 1) * bytes_per_row_, static_cast<int>(memory.size()))
-                           };
+                           int const max_column_index{std::min((row_index + 1) * bytes_per_row_,
+                              static_cast<int>(memory.size()))};
 
-                           for (int column_index{ base_column_index }; column_index < max_column_index; ++column_index)
+                           for (int column_index{base_column_index}; column_index < max_column_index; ++column_index)
                            {
-                              Byte const byte{ memory.read(static_cast<Word>(column_index)) };
+                              Byte const byte{memory.read(static_cast<Word>(column_index))};
                               if (not byte)
-                                 ImGui::PushStyleColor(ImGuiCol_Text, { 0.5f, 0.5f, 0.5f, 1.0f });
+                              {
+                                 ImGui::PushStyleColor(ImGuiCol_Text, {0.5f, 0.5f, 0.5f, 1.0f});
+                              }
 
                               ImGui::Text("%02X", byte);
 
-                              if (column_index == jump_address_)
+                              if (static_cast<Word>(column_index) == jump_address_)
+                              {
                                  ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(),
                                     IM_COL32(255, 255, 255, 255));
+                              }
 
                               if (not byte)
+                              {
                                  ImGui::PopStyleColor();
+                              }
 
                               if (column_index < max_column_index - 1)
+                              {
                                  ImGui::SameLine();
+                              }
                            }
                         }
+                     }
                   }
                   clipper.End();
                }
@@ -102,12 +114,16 @@ namespace nes
 
                if (ImGui::Button("Select program"))
                {
-                  SDL_DialogFileFilter constexpr filter{ "Binaries", "bin" };
+                  constexpr SDL_DialogFileFilter filter{.name{"Binaries"}, .pattern{"bin"}};
                   SDL_ShowOpenFileDialog(
-                     [](void* const visualiser, char const* const* file_list, int const)
+                     [](void* const visualiser, char const* const* file_list, int const) -> void
                      {
-                        static_cast<Visualiser*>(visualiser)->program_path_ = file_list[0];
-                     }, this, nullptr, &filter, 1, nullptr, false);
+                        if (file_list)
+                        {
+                           static_cast<Visualiser*>(visualiser)->program_path_ = *file_list;
+                        }
+                     },
+                     this, nullptr, &filter, 1, nullptr, false);
                }
 
                if (exists(program_path_))
@@ -116,11 +132,13 @@ namespace nes
                   ImGui::Text("%s", program_path_.filename().string().c_str());
                }
 
-               ImGui::InputScalar("Load address", ImGuiDataType_U16, &program_load_address_, nullptr, nullptr,
-                  "%04X", ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
+               ImGui::InputScalar("Load address", ImGuiDataType_U16, &program_load_address_, nullptr, nullptr, "%04X",
+                  ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
 
                if (exists(program_path_))
+               {
                   load_program_requested_ = ImGui::Button("Load");
+               }
             }
             ImGui::End();
 
@@ -130,30 +148,31 @@ namespace nes
                ImGui::Text("Program counter:");
                ImGui::SameLine();
                ImGui::SetNextItemWidth(50.0f);
-               ImGui::InputScalar("##hidden", ImGuiDataType_U16, &processor.program_counter,
-                  nullptr, nullptr, "%04X", ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
+               ImGui::InputScalar("##hidden", ImGuiDataType_U16, &processor.program_counter, nullptr, nullptr, "%04X",
+                  ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
                ImGui::Text("A: %02X", processor.accumulator());
                ImGui::Text("X: %02X", processor.x());
                ImGui::Text("Y: %02X", processor.y());
                ImGui::Text("S: %02X", processor.stack_pointer());
 
                auto const cast{
-                  [](Processor::ProcessorStatusFlag const flag)
+                  [](Processor::ProcessorStatusFlag const flag) -> std::underlying_type_t<Processor::ProcessorStatusFlag>
                   {
                      return static_cast<std::underlying_type_t<Processor::ProcessorStatusFlag>>(flag);
                   }
                };
 
-               ProcessorStatus const processor_status{ processor.processor_status() };
-               ImGui::Text("%s", std::format("P: {}{}{}{}{}{}{}{}",
-                  processor_status & cast(Processor::ProcessorStatusFlag::N) ? 'N' : '-',
-                  processor_status & cast(Processor::ProcessorStatusFlag::V) ? 'V' : '-',
-                  processor_status & cast(Processor::ProcessorStatusFlag::_) ? '_' : '-',
-                  processor_status & cast(Processor::ProcessorStatusFlag::B) ? 'B' : '-',
-                  processor_status & cast(Processor::ProcessorStatusFlag::D) ? 'D' : '-',
-                  processor_status & cast(Processor::ProcessorStatusFlag::I) ? 'I' : '-',
-                  processor_status & cast(Processor::ProcessorStatusFlag::Z) ? 'Z' : '-',
-                  processor_status & cast(Processor::ProcessorStatusFlag::C) ? 'C' : '-').c_str());
+               ProcessorStatus const processor_status{processor.processor_status()};
+               ImGui::Text("%s",
+                  std::format("P: {}{}{}{}{}{}{}{}", processor_status & cast(Processor::ProcessorStatusFlag::N) ? 'N' : '-',
+                     processor_status & cast(Processor::ProcessorStatusFlag::V) ? 'V' : '-',
+                     processor_status & cast(Processor::ProcessorStatusFlag::_) ? '_' : '-',
+                     processor_status & cast(Processor::ProcessorStatusFlag::B) ? 'B' : '-',
+                     processor_status & cast(Processor::ProcessorStatusFlag::D) ? 'D' : '-',
+                     processor_status & cast(Processor::ProcessorStatusFlag::I) ? 'I' : '-',
+                     processor_status & cast(Processor::ProcessorStatusFlag::Z) ? 'Z' : '-',
+                     processor_status & cast(Processor::ProcessorStatusFlag::C) ? 'C' : '-')
+                     .c_str());
 
                if (ImGui::Checkbox("Tick repeatedly", &tick_repeatedly_); not tick_repeatedly_)
                {
@@ -162,7 +181,9 @@ namespace nes
                   step_ = ImGui::Button("Step");
                }
                else
+               {
                   tick_once_ = step_ = false;
+               }
 
                reset_ = ImGui::Button("Reset");
             }
@@ -177,37 +198,37 @@ namespace nes
       return true;
    }
 
-   bool Visualiser::tick_repeatedly() const noexcept
+   auto Visualiser::tick_repeatedly() const -> bool
    {
       return tick_repeatedly_;
    }
 
-   bool Visualiser::tick_once() const noexcept
+   auto Visualiser::tick_once() const -> bool
    {
       return tick_once_;
    }
 
-   bool Visualiser::step() const noexcept
+   auto Visualiser::step() const -> bool
    {
       return step_;
    }
 
-   bool Visualiser::reset() const noexcept
+   auto Visualiser::reset() const -> bool
    {
       return reset_;
    }
 
-   std::filesystem::path const& Visualiser::program_path() const noexcept
+   auto Visualiser::program_path() const -> std::filesystem::path const&
    {
       return program_path_;
    }
 
-   Word Visualiser::program_load_address() const noexcept
+   auto Visualiser::program_load_address() const -> Word
    {
       return program_load_address_;
    }
 
-   bool Visualiser::load_program_requested() const noexcept
+   auto Visualiser::load_program_requested() const -> bool
    {
       return load_program_requested_;
    }

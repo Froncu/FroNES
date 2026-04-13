@@ -1,0 +1,154 @@
+---
+AccessModifierOffset: -3
+AlignAfterOpenBracket: false
+AlignArrayOfStructures: Left
+AlignConsecutiveAssignments:
+  Enabled: false
+AlignConsecutiveBitFields:
+  Enabled: false
+AlignConsecutiveDeclarations:
+  Enabled: false
+AlignConsecutiveMacros:
+  Enabled: false
+AlignConsecutiveShortCaseStatements:
+  Enabled: false
+AlignConsecutiveTableGenBreakingDAGArgColons:
+  Enabled: false
+AlignConsecutiveTableGenCondOperatorColons:
+  Enabled: false
+AlignConsecutiveTableGenDefinitionColons:
+  Enabled: false
+AlignEscapedNewlines: DontAlign
+AlignOperands: AlignAfterOperator
+AlignTrailingComments:
+  Kind: Never
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowBreakBeforeNoexceptSpecifier: Never
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortCompoundRequirementOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: None
+AllowShortLoopsOnASingleLine: false
+AllowShortNamespacesOnASingleLine: false
+AlwaysBreakBeforeMultilineStrings: true
+BinPackArguments: true
+BinPackParameters: BinPack
+BitFieldColonSpacing: Both
+BreakBeforeBraces: Allman
+BreakAdjacentStringLiterals: true
+BreakAfterAttributes: Never
+BreakAfterOpenBracketBracedList: true
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeCloseBracketBracedList: true
+BreakBeforeConceptDeclarations: Always
+BreakBeforeInlineASMColon: Never
+BreakBeforeTemplateCloser: true
+BreakBeforeTernaryOperators: true
+BreakBinaryOperations: RespectPrecedence
+BreakConstructorInitializers: BeforeComma
+BreakFunctionDefinitionParameters: false
+BreakInheritanceList: BeforeComma
+BreakStringLiterals: true
+BreakTemplateDeclarations: Yes
+ColumnLimit: 128
+CompactNamespaces: false
+ConstructorInitializerIndentWidth: 3
+ContinuationIndentWidth: 3
+IndentWidth: 3
+Cpp11BracedListStyle: true
+DerivePointerAlignment: false
+EmptyLineAfterAccessModifier: Never
+EmptyLineBeforeAccessModifier: Always
+EnumTrailingComma: Remove
+FixNamespaceComments: false
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: ^<[^.]+>$
+    Priority: 1
+    CaseSensitive: false
+  - Regex: ^<.+\..+>$
+    Priority: 2
+    CaseSensitive: false
+  - Regex: ^".+\..+"$
+    Priority: 3
+    CaseSensitive: false
+IncludeIsMainRegex: ^$
+IndentAccessModifiers: false
+IndentCaseBlocks: false
+IndentCaseLabels: true
+IndentExportBlock: true
+IndentExternBlock: Indent
+IndentGotoLabels: true
+IndentPPDirectives: BeforeHash
+IndentRequiresClause: false
+IndentWrappedFunctionNames: true
+InsertBraces: true
+InsertNewlineAtEOF: false
+InsertTrailingCommas: None
+IntegerLiteralSeparator:
+  Binary: 4
+  Decimal: 3
+  Hex: 2
+KeepEmptyLines:
+  AtEndOfFile: false
+  AtStartOfFile: false
+  AtStartOfBlock: false
+DisableFormat: false
+LambdaBodyIndentation: Signature
+Language: Cpp
+LineEnding: LF
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: All
+PackConstructorInitializers: Never
+PointerAlignment: Left
+QualifierAlignment: Custom
+QualifierOrder:
+  - friend
+  - static
+  - inline
+  - constexpr
+  - type
+  - const
+  - volatile
+  - restrict
+ReferenceAlignment: Left
+ReflowComments: Always
+RemoveBracesLLVM: false
+RemoveEmptyLinesInUnwrappedLines: true
+RemoveParentheses: ReturnStatement
+RemoveSemicolon: true
+RequiresClausePosition: OwnLine
+RequiresExpressionIndentation: OuterScope
+SeparateDefinitionBlocks: Always
+SortIncludes:
+  Enabled: true
+  IgnoreCase: true
+SortUsingDeclarations: Lexicographic
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceAfterOperatorKeyword: false
+SpaceAfterTemplateKeyword: false
+SpaceAroundPointerQualifiers: Default
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCaseColon: false
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: false
+SpaceBeforeInheritanceColon: false
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: false
+SpaceBeforeSquareBrackets: false
+SpaceInEmptyBlock: false
+SpacesInAngles: Never
+SpacesInContainerLiterals: false
+SpacesInLineCommentPrefix:
+  Minimum: 1
+  Maximum: -1
+SpacesInParens: Never
+SpacesInSquareBrackets: false
+Standard: c++20
+UseTab: Never
+WrapNamespaceBodyWithEmptyLines: Never

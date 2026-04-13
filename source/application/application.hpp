@@ -12,32 +12,31 @@ namespace nes
 {
    class Application final
    {
-      public:
-         Application() noexcept = default;
-         Application(Application const&) = delete;
-         Application(Application&&) = delete;
+   public:
+      Application() = default;
+      Application(Application const&) = delete;
+      Application(Application&&) = delete;
 
-         ~Application() noexcept = default;
+      ~Application() = default;
 
-         Application& operator=(Application const&) = delete;
-         Application& operator=(Application&&) = delete;
+      auto operator=(Application const&) -> Application& = delete;
+      auto operator=(Application&&) -> Application& = delete;
 
-         bool update();
+      auto update() -> bool;
 
-      private:
-         void handle_exception(UnsupportedOpcode const& exception,
-            std::source_location source_location = std::source_location::current()) const;
+   private:
+      auto handle_exception(UnsupportedOpcode const& exception) const -> void;
 
-         void try_tick();
-         void try_tick_repeatedly(std::stop_token const& stop_token);
-         void try_step();
+      auto try_tick() -> void;
+      auto try_tick_repeatedly(std::stop_token const& stop_token) -> void;
+      auto try_step() -> void;
 
-         Visualiser& visualiser_{ *Locator::get<Visualiser>() };
-         Logger& logger_{ *Locator::get<Logger>() };
+      Visualiser& visualiser_{*Locator::get<Visualiser>()};
+      Logger& logger_{*Locator::get<Logger>()};
 
-         Memory memory_{};
-         Processor processor_{ memory_ };
-         std::jthread emulation_thread_{};
+      Memory memory_{};
+      Processor processor_{memory_};
+      std::jthread emulation_thread_{};
    };
 }
 

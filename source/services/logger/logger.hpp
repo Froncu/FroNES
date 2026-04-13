@@ -5,16 +5,16 @@
 
 namespace std
 {
-   template <>
+   template<>
    struct hash<source_location>
    {
-      [[nodiscard]] std::size_t operator()(source_location const& location) const noexcept;
+      [[nodiscard]] auto operator()(source_location const& location) const -> std::size_t;
    };
 
-   template <>
+   template<>
    struct equal_to<source_location>
    {
-      [[nodiscard]] bool operator()(source_location const& location_a, source_location const& location_b) const noexcept;
+      [[nodiscard]] auto operator()(source_location const& location_a, source_location const& location_b) const -> bool;
    };
 }
 
@@ -22,7 +22,7 @@ namespace nes
 {
    class Logger final
    {
-      enum class Type
+      enum class Type : std::uint8_t
       {
          INFO,
          WARNING,
@@ -31,122 +31,127 @@ namespace nes
 
       struct Payload final
       {
-         Type type;
-         std::source_location location;
-         std::string message;
+         Type type{};
+         std::source_location location{};
+         std::string message{};
       };
 
       struct LogInfo final
       {
-         bool once;
-         Payload payload;
+         bool once{};
+         Payload payload{};
       };
 
-      public:
-         Logger() = default;
-         Logger(Logger const&) = delete;
-         Logger(Logger&&) = delete;
+   public:
+      Logger() = default;
+      Logger(Logger const&) = delete;
+      Logger(Logger&&) = delete;
 
-         ~Logger();
+      ~Logger();
 
-         Logger& operator=(Logger const&) = delete;
-         Logger& operator=(Logger&&) = delete;
+      auto operator=(Logger const&) -> Logger& = delete;
+      auto operator=(Logger&&) -> Logger& = delete;
 
-         template <typename Message>
-         void info(Message&& message, bool const once = false, std::source_location location = std::source_location::current())
+      template<typename Message>
+      void info(Message&& message, bool const once = false, std::source_location location = std::source_location::current())
+      {
          {
-            {
-               std::lock_guard const lock{ mutex_ };
-               log_queue_.push({
-                  .once{ once },
-                  .payload{
-                     .type{ Type::INFO },
-                     .location{ std::move(location) },
-                     .message{ std::format("{}", message) }
-                  }
-               });
-            }
-
-            condition_.notify_one();
+            std::scoped_lock const lock{mutex_};
+            log_queue_.push({
+               .once{once},
+               .payload{
+                     .type{Type::INFO},
+                     .location{std::move(location)},
+                     .message{std::format("{}", std::forward<Message>(message))}
+               }
+            });
          }
 
-         template <typename Message>
-         void warning(Message&& message, bool const once = false,
-            std::source_location location = std::source_location::current())
-         {
-            {
-               std::lock_guard const lock{ mutex_ };
-               log_queue_.push({
-                  .once{ once },
-                  .payload{
-                     .type{ Type::WARNING },
-                     .location{ std::move(location) },
-                     .message{ std::format("{}", message) }
-                  }
-               });
-            }
+         condition_.notify_one();
+      }
 
-            condition_.notify_one();
+      template<typename Message>
+      void warning(Message&& message, bool const once = false, std::source_location location = std::source_location::current())
+      {
+         {
+            std::scoped_lock const lock{mutex_};
+            log_queue_.push({
+               .once{once},
+               .payload{
+                     .type{Type::WARNING},
+                     .location{std::move(location)},
+                     .message{std::format("{}", std::forward<Message>(message))}
+               }
+            });
          }
 
-         template <typename Message>
-         void error(Message&& message, bool const once = false, std::source_location location = std::source_location::current())
+         condition_.notify_one();
+      }
+
+      template<typename Message>
+      void error(Message&& message, bool const once = false, std::source_location location = std::source_location::current())
+      {
          {
-            {
-               std::lock_guard const lock{ mutex_ };
-               log_queue_.push({
-                  .once{ once },
-                  .payload{
+            std::scoped_lock const lock{mutex_};
+            log_queue_.push({
+               .once{once},
+               .payload{
                      .type = Type::ERROR,
-                     .location{ std::move(location) },
-                     .message{ std::format("{}", message) }
-                  }
-               });
-            }
-
-            condition_.notify_one();
+                     .location{std::move(location)},
+                     .message{std::format("{}", std::forward<Message>(message))}
+               }
+            });
          }
 
-      private:
-         static void log(Payload const& payload);
-         void log_once(Payload const& payload);
+         condition_.notify_one();
+      }
 
-         std::unordered_set<std::source_location> location_entries_{};
+   private:
+      static void log(Payload const& payload);
+      void log_once(Payload const& payload);
 
-         bool run_thread_{ true };
-         std::queue<LogInfo> log_queue_{};
+      std::unordered_set<std::source_location> location_entries_{};
 
-         std::mutex mutex_{};
-         std::condition_variable condition_{};
-         std::jthread thread_{
-            [this]
+      bool run_thread_{true};
+      std::queue<LogInfo> log_queue_{};
+
+      std::mutex mutex_{};
+      std::condition_variable condition_{};
+      std::jthread thread_{
+         [this] -> void
+         {
+            while (true)
             {
-               while (true)
+               LogInfo log_info{};
+
                {
-                  LogInfo log_info;
+                  std::unique_lock lock{mutex_};
+                  condition_.wait(lock,
+                     [this] -> bool
+                     {
+                        return not run_thread_ or not log_queue_.empty();
+                     });
 
+                  if (not run_thread_)
                   {
-                     std::unique_lock lock{ mutex_ };
-                     condition_.wait(lock,
-                        [this]
-                        {
-                           return not run_thread_ or not log_queue_.empty();
-                        });
-
-                     if (not run_thread_)
-                        break;
-
-                     log_info = std::move(log_queue_.front());
-                     log_queue_.pop();
+                     break;
                   }
 
-                  if (log_info.once)
-                     log_once(log_info.payload);
-                  else
-                     log(log_info.payload);
+                  log_info = std::move(log_queue_.front());
+                  log_queue_.pop();
+               }
+
+               if (log_info.once)
+               {
+                  log_once(log_info.payload);
+               }
+               else
+               {
+                  log(log_info.payload);
                }
             }
-         };
+         }
+      };
    };
 }
 
