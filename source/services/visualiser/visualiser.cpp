@@ -118,7 +118,7 @@ namespace nes
 
                if (ImGui::Button("Select program"))
                {
-                  constexpr SDL_DialogFileFilter filter{.name{"Binaries"}, .pattern{"bin"}};
+                  constexpr SDL_DialogFileFilter filter{.name = "Binaries", .pattern = "bin"};
                   SDL_ShowOpenFileDialog(
                      [](void* const visualiser, char const* const* file_list, int const) -> void
                      {

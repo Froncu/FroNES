@@ -4,8 +4,10 @@ namespace nes
 {
    void Memory::load_program(std::filesystem::path const& path, Word const load_address)
    {
-      std::basic_ifstream<Byte, std::char_traits<Byte>> in{path.c_str(), std::ios::binary};
-      in.read(&data_[load_address], static_cast<std::streamsize>(data_.size() - load_address));
+      std::ifstream in{path.c_str(), std::ios::binary};
+      std::array<char, data_.size()> buffer{};
+      in.read(buffer.data(), buffer.size());
+      std::ranges::copy(buffer, &data_[load_address]);
    }
 
    void Memory::write(Word const address, Byte const data)
