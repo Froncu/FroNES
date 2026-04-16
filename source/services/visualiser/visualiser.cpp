@@ -34,6 +34,10 @@ namespace nes
       ImGui_ImplSDL3_Shutdown();
    }
 
+   Visualiser::Visualiser(Locator::ConstructionKey)
+   {
+   }
+
    auto Visualiser::update(Memory const& memory, Processor& processor) -> bool
    {
       ImGui_ImplSDLRenderer3_NewFrame();

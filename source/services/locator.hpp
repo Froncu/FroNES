@@ -15,14 +15,34 @@ namespace nes
    class Locator final
    {
    public:
+      class ConstructionKey final
+      {
+         friend Locator;
+
+      public:
+         ConstructionKey(ConstructionKey&&) = default;
+         ConstructionKey(ConstructionKey const&) = default;
+
+         ~ConstructionKey() = default;
+
+         auto operator=(ConstructionKey const&) -> ConstructionKey& = delete;
+         auto operator=(ConstructionKey&&) -> ConstructionKey& = delete;
+
+      private:
+         explicit ConstructionKey() = default;
+      };
+
       template<typename Service, std::derived_from<Service> Provider = Service, typename... Arguments>
-      requires std::constructible_from<Provider, Arguments...>
+      requires std::constructible_from<Provider, ConstructionKey, Arguments...>
       static auto provide(Arguments&&... arguments) -> Service&
       {
          auto& services{instance().services_};
          auto& service_indices{instance().service_indices_};
 
-         UniquePointer<void> new_provider{new Provider{std::forward<Arguments>(arguments)...}, void_deleter<Provider>};
+         UniquePointer<void> new_provider{
+            new Provider{ConstructionKey{}, std::forward<Arguments>(arguments)...},
+             void_deleter<Provider>
+         };
 
          auto&& [service_index, did_insert]{service_indices.emplace(type_index<Service>(), services.size())};
          if (did_insert)
@@ -41,19 +61,6 @@ namespace nes
          return *static_cast<Service*>(current_provider.get());
       }
 
-      static void remove_providers()
-      {
-         auto& services{instance().services_};
-         auto& service_indices{instance().service_indices_};
-
-         while (not services.empty())
-         {
-            services.pop_back();
-         }
-
-         service_indices.clear();
-      }
-
       template<typename Service>
       [[nodiscard]] static auto get() -> Service*
       {
@@ -68,6 +75,8 @@ namespace nes
 
          return static_cast<Service* const>(services[service_index->second].get());
       }
+
+      static void remove_all();
 
       Locator(Locator const&) = delete;
       Locator(Locator&&) = delete;

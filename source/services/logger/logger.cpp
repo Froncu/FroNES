@@ -47,6 +47,10 @@ namespace std
 
 namespace nes
 {
+   Logger::Logger(Locator::ConstructionKey)
+   {
+   }
+
    Logger::~Logger()
    {
       {

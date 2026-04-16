@@ -41,7 +41,7 @@ namespace nes
       };
 
    public:
-      Visualiser() = default;
+      Visualiser(Locator::ConstructionKey);
       Visualiser(Visualiser const&) = delete;
       Visualiser(Visualiser&&) = delete;
 

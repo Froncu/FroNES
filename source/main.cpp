@@ -34,5 +34,5 @@ auto SDL_AppEvent(void* const, SDL_Event* const event) -> SDL_AppResult
 void SDL_AppQuit(void* const app_state, SDL_AppResult const)
 {
    delete static_cast<nes::Application const*>(app_state);
-   nes::Locator::remove_providers();
+   nes::Locator::remove_all();
 }

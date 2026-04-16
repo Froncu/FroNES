@@ -2,6 +2,7 @@
 #define LOGGER_HPP
 
 #include "pch.hpp"
+#include "services/locator.hpp"
 
 namespace std
 {
@@ -43,7 +44,7 @@ namespace nes
       };
 
    public:
-      Logger() = default;
+      Logger(Locator::ConstructionKey);
       Logger(Logger const&) = delete;
       Logger(Logger&&) = delete;
 
