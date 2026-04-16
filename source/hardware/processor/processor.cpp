@@ -1977,14 +1977,9 @@ namespace nes
 
    constexpr auto Processor::add_with_overflow(Byte const left, SignedByte const right) -> std::pair<Byte, SignedByte>
    {
-      auto const result{ static_cast<Byte>(left + right) };
-
-      SignedByte overflow;
-      if (right < 0)
-         overflow = result > left ? -1 : 0;
-      else
-         overflow = result < left ? 1 : 0;
-
-      return {result, overflow};
+      auto const result{static_cast<Byte>(left + right)};
+      auto const wrapped{static_cast<SignedByte>(right >> 7) | 1};
+      auto const did_wrap{static_cast<Byte>(result < left) ^ static_cast<Byte>(right < 0)};
+      return {result, static_cast<SignedByte>(wrapped * did_wrap)};
    }
 }
