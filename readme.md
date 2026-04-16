@@ -8,7 +8,6 @@ At the moment I'm implementing the **NMOS 6502** which served as the base for th
 
 - [SDL3](https://github.com/libsdl-org/SDL) - Core functionality (entry point, system events, input, windowing, etc.)
 - [Dear ImGui](https://github.com/ocornut/imgui) - GUI
-- [nativefiledialog-extended](https://github.com/btzy/nativefiledialog-extended) - Program loading
 
 Those are managed through my custom [vcpkg](https://github.com/Froncu/vcpkg) fork and will be automatically installed during the configuration process.
 
