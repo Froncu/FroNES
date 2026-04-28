@@ -1,3 +1,4 @@
+#include "exceptions/emulator_exception.hpp"
 #include "visualiser.hpp"
 
 namespace nes
@@ -48,19 +49,55 @@ namespace nes
          {
             ImGui::Begin("Memory", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse);
             {
-               // TODO: the MemoryRegion's height is not correct
-               float const item_height{ ImGui::GetTextLineHeightWithSpacing() };
-               ImGui::BeginChild("MemoryRegion", { 0, item_height * static_cast<float>(visible_rows_) }, ImGuiChildFlags_Borders,
-                  ImGuiWindowFlags_HorizontalScrollbar);
+               jump_requested_ = ImGui::InputScalar("Jump to address", ImGuiDataType_U16, &jump_address_, nullptr, nullptr,
+                  "%04X", ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
+
+               ImGui::InputInt("Bytes per row", &bytes_per_row_, 1, 1);
+
+               if (ImGui::Button("Select program"))
+               {
+                  constexpr SDL_DialogFileFilter filter{ .name = "Binaries", .pattern = "bin" };
+                  SDL_ShowOpenFileDialog(
+                     [](void* const visualiser, char const* const* file_list, int const) -> void
+                     {
+                        runtime_assert(file_list, std::format("failed to load a program! ({})", SDL_GetError()));
+
+                        if (not file_list[0])
+                        {
+                           Locator::get<Logger>()->warning("no file was chosen or the dialog was cancelled!");
+                           return;
+                        }
+
+                        static_cast<Visualiser*>(visualiser)->program_path_ = file_list[0];
+                     },
+                     this, nullptr, &filter, 1, nullptr, false);
+               }
+
+               if (exists(program_path_))
+               {
+                  ImGui::SameLine();
+                  ImGui::Text("%s", program_path_.filename().string().c_str());
+               }
+
+               ImGui::InputScalar("Load address", ImGuiDataType_U16, &program_load_address_, nullptr, nullptr, "%04X",
+                  ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
+
+               if (exists(program_path_))
+                  load_program_requested_ = ImGui::Button("Load");
+
+               ImGui::BeginChild("MemoryRegion", { 0, 0 }, ImGuiChildFlags_Borders, ImGuiWindowFlags_HorizontalScrollbar);
                {
                   ImGuiListClipper clipper{};
+                  float const item_height{ ImGui::GetTextLineHeightWithSpacing() };
                   clipper.Begin(static_cast<int>(std::ceil(static_cast<double>(memory.size()) / bytes_per_row_)), item_height);
                   {
                      if (jump_requested_)
                      {
                         jump_address_ = std::clamp(jump_address_, {}, static_cast<Word>(memory.size() - 1));
                         int const target_row{ jump_address_ / bytes_per_row_ };
-                        float const centered_row{ static_cast<float>(target_row) - static_cast<float>(visible_rows_) / 2.0f + 0.5f };
+                        float const available_height{ ImGui::GetWindowHeight() };
+                        auto const visible_rows{ static_cast<int>(available_height / item_height) };
+                        float const centered_row{ static_cast<float>(target_row) - static_cast<float>(visible_rows) / 2.0f + 0.5f };
                         ImGui::SetScrollY(centered_row * item_height);
                      }
 
@@ -96,43 +133,6 @@ namespace nes
                   clipper.End();
                }
                ImGui::EndChild();
-
-               jump_requested_ = ImGui::InputScalar("Jump to address", ImGuiDataType_U16, &jump_address_, nullptr, nullptr,
-                  "%04X", ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
-
-               ImGui::InputInt("Bytes per row", &bytes_per_row_, 1, 1);
-               ImGui::InputInt("Visible rows", &visible_rows_, 1, 1);
-
-               if (ImGui::Button("Select program"))
-               {
-                  constexpr SDL_DialogFileFilter filter{ .name = "Binaries", .pattern = "bin" };
-                  SDL_ShowOpenFileDialog(
-                     [](void* const visualiser, char const* const* file_list, int const) -> void
-                     {
-                        runtime_assert(file_list, std::format("failed to load a program! ({})", SDL_GetError()));
-
-                        if (not file_list[0])
-                        {
-                           Locator::get<Logger>()->warning("no file was chosen or the dialog was cancelled!");
-                           return;
-                        }
-
-                        static_cast<Visualiser*>(visualiser)->program_path_ = file_list[0];
-                     },
-                     this, nullptr, &filter, 1, nullptr, false);
-               }
-
-               if (exists(program_path_))
-               {
-                  ImGui::SameLine();
-                  ImGui::Text("%s", program_path_.filename().string().c_str());
-               }
-
-               ImGui::InputScalar("Load address", ImGuiDataType_U16, &program_load_address_, nullptr, nullptr, "%04X",
-                  ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
-
-               if (exists(program_path_))
-                  load_program_requested_ = ImGui::Button("Load");
             }
             ImGui::End();
 

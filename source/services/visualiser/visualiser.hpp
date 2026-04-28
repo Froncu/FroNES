@@ -90,7 +90,6 @@ namespace nes
 
          Word jump_address_{};
          int bytes_per_row_{ 16 };
-         int visible_rows_{ 16 };
          bool jump_requested_{};
          std::filesystem::path program_path_{};
          Word program_load_address_{};
