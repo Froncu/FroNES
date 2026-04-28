@@ -109,8 +109,15 @@ namespace nes
                   SDL_ShowOpenFileDialog(
                      [](void* const visualiser, char const* const* file_list, int const) -> void
                      {
-                        if (file_list)
-                           static_cast<Visualiser*>(visualiser)->program_path_ = *file_list;
+                        runtime_assert(file_list, std::format("failed to load a program! ({})", SDL_GetError()));
+
+                        if (not file_list[0])
+                        {
+                           Locator::get<Logger>()->warning("no file was chosen or the dialog was cancelled!");
+                           return;
+                        }
+
+                        static_cast<Visualiser*>(visualiser)->program_path_ = file_list[0];
                      },
                      this, nullptr, &filter, 1, nullptr, false);
                }
