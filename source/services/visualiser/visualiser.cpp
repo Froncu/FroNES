@@ -4,7 +4,7 @@ namespace nes
 {
    Visualiser::SDL_Context::SDL_Context()
    {
-      bool const succeeded{SDL_InitSubSystem(initialisation_flags_)};
+      bool const succeeded{ SDL_InitSubSystem(initialisation_flags_) };
       runtime_assert(succeeded, std::format("failed to initialise SDL ({})", SDL_GetError()));
    }
 
@@ -15,13 +15,13 @@ namespace nes
 
    Visualiser::ImGuiBackend::ImGuiBackend(SDL_Window& window, SDL_Renderer& renderer)
    {
-      bool succeeded{ImGui_ImplSDL3_InitForSDLRenderer(&window, &renderer)};
+      bool succeeded{ ImGui_ImplSDL3_InitForSDLRenderer(&window, &renderer) };
       runtime_assert(succeeded, "failed to initialize ImGui's SDL implementation");
 
       succeeded = ImGui_ImplSDLRenderer3_Init(&renderer);
       runtime_assert(succeeded, "failed to initialize ImGui for SDL renderer");
 
-      ImGuiIO& input_output{ImGui::GetIO()};
+      ImGuiIO& input_output{ ImGui::GetIO() };
       input_output.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
       input_output.ConfigDockingWithShift = true;
       input_output.ConfigDockingTransparentPayload = true;
@@ -49,8 +49,8 @@ namespace nes
             ImGui::Begin("Memory", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse);
             {
                // TODO: the MemoryRegion's height is not correct
-               float const item_height{ImGui::GetTextLineHeightWithSpacing()};
-               ImGui::BeginChild("MemoryRegion", {0, item_height * static_cast<float>(visible_rows_)}, ImGuiChildFlags_Borders,
+               float const item_height{ ImGui::GetTextLineHeightWithSpacing() };
+               ImGui::BeginChild("MemoryRegion", { 0, item_height * static_cast<float>(visible_rows_) }, ImGuiChildFlags_Borders,
                   ImGuiWindowFlags_HorizontalScrollbar);
                {
                   ImGuiListClipper clipper{};
@@ -59,10 +59,8 @@ namespace nes
                      if (jump_requested_)
                      {
                         jump_address_ = std::clamp(jump_address_, {}, static_cast<Word>(memory.size() - 1));
-                        int const target_row{jump_address_ / bytes_per_row_};
-                        float const centered_row{
-                           static_cast<float>(target_row) - static_cast<float>(visible_rows_) / 2.0f + 0.5f
-                        };
+                        int const target_row{ jump_address_ / bytes_per_row_ };
+                        float const centered_row{ static_cast<float>(target_row) - static_cast<float>(visible_rows_) / 2.0f + 0.5f };
                         ImGui::SetScrollY(centered_row * item_height);
                      }
 
@@ -70,38 +68,27 @@ namespace nes
                      {
                         for (int row_index = clipper.DisplayStart; row_index < clipper.DisplayEnd; ++row_index)
                         {
-                           int const base_column_index{row_index * bytes_per_row_};
+                           int const base_column_index{ row_index * bytes_per_row_ };
                            ImGui::Text("%04X:", base_column_index);
                            ImGui::SameLine();
 
-                           int const max_column_index{std::min((row_index + 1) * bytes_per_row_,
-                              static_cast<int>(memory.size()))};
-
-                           for (int column_index{base_column_index}; column_index < max_column_index; ++column_index)
+                           int const max_column_index{ std::min((row_index + 1) * bytes_per_row_, static_cast<int>(memory.size())) };
+                           for (int column_index{ base_column_index }; column_index < max_column_index; ++column_index)
                            {
-                              Byte const byte{memory.read(static_cast<Word>(column_index))};
+                              Byte const byte{ memory.read(static_cast<Word>(column_index)) };
                               if (not byte)
-                              {
-                                 ImGui::PushStyleColor(ImGuiCol_Text, {0.5f, 0.5f, 0.5f, 1.0f});
-                              }
+                                 ImGui::PushStyleColor(ImGuiCol_Text, { 0.5f, 0.5f, 0.5f, 1.0f });
 
                               ImGui::Text("%02X", byte);
 
                               if (static_cast<Word>(column_index) == jump_address_)
-                              {
-                                 ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(),
-                                    IM_COL32(255, 255, 255, 255));
-                              }
+                                 ImGui::GetWindowDrawList()->AddRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), IM_COL32(255, 255, 255, 255));
 
                               if (not byte)
-                              {
                                  ImGui::PopStyleColor();
-                              }
 
                               if (column_index < max_column_index - 1)
-                              {
                                  ImGui::SameLine();
-                              }
                            }
                         }
                      }
@@ -118,14 +105,12 @@ namespace nes
 
                if (ImGui::Button("Select program"))
                {
-                  constexpr SDL_DialogFileFilter filter{.name = "Binaries", .pattern = "bin"};
+                  constexpr SDL_DialogFileFilter filter{ .name = "Binaries", .pattern = "bin" };
                   SDL_ShowOpenFileDialog(
                      [](void* const visualiser, char const* const* file_list, int const) -> void
                      {
                         if (file_list)
-                        {
                            static_cast<Visualiser*>(visualiser)->program_path_ = *file_list;
-                        }
                      },
                      this, nullptr, &filter, 1, nullptr, false);
                }
@@ -140,9 +125,7 @@ namespace nes
                   ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_CharsUppercase);
 
                if (exists(program_path_))
-               {
                   load_program_requested_ = ImGui::Button("Load");
-               }
             }
             ImGui::End();
 
@@ -166,9 +149,10 @@ namespace nes
                   }
                };
 
-               ProcessorStatus const processor_status{processor.processor_status()};
+               ProcessorStatus const processor_status{ processor.processor_status() };
                ImGui::Text("%s",
-                  std::format("P: {}{}{}{}{}{}{}{}", processor_status & cast(Processor::ProcessorStatusFlag::N) ? 'N' : '-',
+                  std::format("P: {}{}{}{}{}{}{}{}",
+                     processor_status & cast(Processor::ProcessorStatusFlag::N) ? 'N' : '-',
                      processor_status & cast(Processor::ProcessorStatusFlag::V) ? 'V' : '-',
                      processor_status & cast(Processor::ProcessorStatusFlag::_) ? '_' : '-',
                      processor_status & cast(Processor::ProcessorStatusFlag::B) ? 'B' : '-',
@@ -176,7 +160,7 @@ namespace nes
                      processor_status & cast(Processor::ProcessorStatusFlag::I) ? 'I' : '-',
                      processor_status & cast(Processor::ProcessorStatusFlag::Z) ? 'Z' : '-',
                      processor_status & cast(Processor::ProcessorStatusFlag::C) ? 'C' : '-')
-                     .c_str());
+                 .c_str());
 
                if (ImGui::Checkbox("Tick repeatedly", &tick_repeatedly_); not tick_repeatedly_)
                {
@@ -185,9 +169,7 @@ namespace nes
                   step_ = ImGui::Button("Step");
                }
                else
-               {
                   tick_once_ = step_ = false;
-               }
 
                reset_ = ImGui::Button("Reset");
             }
