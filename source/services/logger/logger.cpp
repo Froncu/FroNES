@@ -47,17 +47,13 @@ namespace nes
 
    Logger::~Logger()
    {
-      {
-         std::scoped_lock const lock{ mutex_ };
-         run_thread_ = false;
-      }
-
+      thread_.request_stop();
       condition_.notify_one();
    }
 
    auto Logger::log(Payload const& payload) -> void
    {
-      std::ostream* output_stream{};
+      std::ostream* output_stream;
       switch (payload.type)
       {
          case Type::INFO:
@@ -75,27 +71,32 @@ namespace nes
             output_stream = &std::cout;
       }
 
-      std::string_view esc_sequence;
+      std::string_view escape_sequence;
+      std::string_view type;
       switch (payload.type)
       {
          case Type::INFO:
-            esc_sequence = "1;36;40";
+            escape_sequence = "1;36";
+            type = "INFO";
             break;
 
          case Type::WARNING:
-            esc_sequence = "1;33;40";
+            escape_sequence = "1;33";
+            type = "WARNING";
             break;
 
          case Type::ERROR:
-            esc_sequence = "1;31;40";
+            escape_sequence = "1;31";
+            type = "ERROR";
             break;
       }
 
-      std::println(*output_stream, "\033[{}m>> {}({})\n[{}]: {}\033[0m",
-         esc_sequence,
+      std::println(*output_stream,
+         "[\x1b[{}m{}\x1b[0m] [\x1b[1;97m{}({})\x1b[0m]\n{}",
+         escape_sequence,
+         type,
          payload.location.file_name(),
          payload.location.line(),
-         std::format("{:%H:%M:%S}", std::chrono::system_clock::now()),
          payload.message);
    }
 

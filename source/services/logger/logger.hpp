@@ -113,27 +113,25 @@ namespace nes
 
          std::unordered_set<std::source_location> location_entries_{};
 
-         bool run_thread_{ true };
          std::queue<LogInfo> log_queue_{};
 
          std::mutex mutex_{};
          std::condition_variable condition_{};
          std::jthread thread_{
-            [this] -> void
+            [this](std::stop_token const& stop_token) -> void
             {
+               LogInfo log_info;
                while (true)
                {
-                  LogInfo log_info;
-
                   {
                      std::unique_lock lock{ mutex_ };
                      condition_.wait(lock,
-                        [this] -> bool
+                        [this, &stop_token]
                         {
-                           return not run_thread_ or not log_queue_.empty();
+                           return not log_queue_.empty() or stop_token.stop_requested();
                         });
 
-                     if (not run_thread_)
+                     if (log_queue_.empty())
                         break;
 
                      log_info = std::move(log_queue_.front());
