@@ -5,10 +5,9 @@ namespace nes
    UnsupportedOpcode::UnsupportedOpcode(ProgramCounter const program_counter, Byte const opcode,
       std::source_location const& location)
       : EmulationException{
-           program_counter, std::format("encountered an unsupported 0x{:02X} opcode at 0x{:04X}", opcode, program_counter),
-           location
-        }
-      , opcode{opcode}
+         program_counter, std::format("encountered an unsupported 0x{:02X} opcode at 0x{:04X}", opcode, program_counter), location
+      }
+      , opcode{ opcode }
    {
    }
 }

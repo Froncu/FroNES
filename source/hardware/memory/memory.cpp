@@ -2,15 +2,15 @@
 
 namespace nes
 {
-   void Memory::load_program(std::filesystem::path const& path, Word const load_address)
+   auto Memory::load_program(std::filesystem::path const& path, Word const load_address) -> void
    {
-      std::ifstream in{path.c_str(), std::ios::binary};
+      std::ifstream in{ path.c_str(), std::ios::binary };
       std::array<char, std::size(decltype(data_){})> buffer{};
       in.read(buffer.data(), buffer.size());
       std::memcpy(&data_[load_address], buffer.data(), buffer.size() - load_address);
    }
 
-   void Memory::write(Word const address, Byte const data)
+   auto Memory::write(Word const address, Byte const data) -> void
    {
       data_[address] = data;
    }

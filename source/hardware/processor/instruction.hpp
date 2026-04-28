@@ -7,25 +7,25 @@ namespace nes
 {
    class Instruction final
    {
-   public:
-      struct promise_type;
+      public:
+         struct promise_type;
 
-      explicit Instruction(std::coroutine_handle<promise_type> handle);
-      Instruction(Instruction const&) = delete;
-      Instruction(Instruction&& other) noexcept;
+         Instruction(std::coroutine_handle<promise_type> handle);
+         Instruction(Instruction const&) = delete;
+         Instruction(Instruction&& other) noexcept;
 
-      ~Instruction();
+         ~Instruction();
 
-      auto operator=(Instruction const&) -> Instruction& = delete;
-      auto operator=(Instruction&& other) noexcept -> Instruction&;
+         auto operator=(Instruction const&) -> Instruction& = delete;
+         auto operator=(Instruction&& other) noexcept -> Instruction&;
 
-      [[nodiscard]] auto tick() const -> bool;
-      [[nodiscard]] auto prefetched_instruction() const -> std::optional<Instruction>&&;
+         [[nodiscard]] auto tick() const -> bool;
+         [[nodiscard]] auto prefetched_instruction() const -> std::optional<Instruction>&&;
 
-   private:
-      auto destroy_handle() const -> void;
+      private:
+         auto destroy_handle() const -> void;
 
-      std::coroutine_handle<promise_type> handle_;
+         std::coroutine_handle<promise_type> handle_;
    };
 
    struct Instruction::promise_type

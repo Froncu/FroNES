@@ -3,12 +3,12 @@
 namespace nes
 {
    Instruction::Instruction(std::coroutine_handle<promise_type> handle)
-      : handle_{handle}
+      : handle_{ handle }
    {
    }
 
    Instruction::Instruction(Instruction&& other) noexcept
-      : handle_{std::exchange(other.handle_, nullptr)}
+      : handle_{ std::exchange(other.handle_, nullptr) }
    {
    }
 
@@ -38,9 +38,7 @@ namespace nes
    auto Instruction::destroy_handle() const -> void
    {
       if (handle_)
-      {
          handle_.destroy();
-      }
    }
 
    auto Instruction::promise_type::initial_suspend() -> std::suspend_always
@@ -64,6 +62,6 @@ namespace nes
 
    auto Instruction::promise_type::get_return_object() -> Instruction
    {
-      return Instruction{std::coroutine_handle<promise_type>::from_promise(*this)};
+      return Instruction{ std::coroutine_handle<promise_type>::from_promise(*this) };
    }
 }

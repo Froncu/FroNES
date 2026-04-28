@@ -1,15 +1,14 @@
 #include "logger.hpp"
-#include "utility/constants.hpp"
 #include "utility/hash.hpp"
 
 namespace std
 {
-   auto hash<source_location>::operator()(source_location const& location) const -> size_t
+   auto hash<source_location>::operator()(source_location const& location) const noexcept -> size_t
    {
-      size_t const hash_1{nes::hash(location.file_name())};
-      size_t const hash_2{nes::hash(location.line())};
-      size_t const hash_3{nes::hash(location.column())};
-      size_t const hash_4{nes::hash(location.function_name())};
+      size_t const hash_1{ nes::hash(location.file_name()) };
+      size_t const hash_2{ nes::hash(location.line()) };
+      size_t const hash_3{ nes::hash(location.column()) };
+      size_t const hash_4{ nes::hash(location.function_name()) };
 
       size_t seed{};
       auto const generate{
@@ -27,18 +26,13 @@ namespace std
       return seed;
    }
 
-   auto equal_to<source_location>::operator()(source_location const& location_a, source_location const& location_b) const
-      -> bool
+   auto equal_to<source_location>::operator()(source_location const& location_a, source_location const& location_b) const -> bool
    {
       if (location_a.line() not_eq location_b.line() or location_a.column() not_eq location_b.column())
-      {
          return false;
-      }
 
       if (location_a.file_name() == location_b.file_name() and location_a.function_name() == location_b.function_name())
-      {
          return true;
-      }
 
       return not std::strcmp(location_a.file_name(), location_b.file_name())
          and not std::strcmp(location_a.function_name(), location_b.function_name());
@@ -54,7 +48,7 @@ namespace nes
    Logger::~Logger()
    {
       {
-         std::scoped_lock const lock{mutex_};
+         std::scoped_lock const lock{ mutex_ };
          run_thread_ = false;
       }
 
@@ -97,26 +91,18 @@ namespace nes
             break;
       }
 
-      std::string const local_time{std::format("{:%H:%M:%S}", std::chrono::system_clock::now())};
-
-      if constexpr (MINGW)
-      {
-         *output_stream << std::format("\033[{}m>> {}({})\n[{}]: {}\033[0m\n", esc_sequence, payload.location.file_name(),
-            payload.location.line(), local_time, payload.message);
-      }
-      else
-      {
-         std::println(*output_stream, "\033[{}m>> {}({})\n[{}]: {}\033[0m", esc_sequence, payload.location.file_name(),
-            payload.location.line(), local_time, payload.message);
-      }
+      std::println(*output_stream, "\033[{}m>> {}({})\n[{}]: {}\033[0m",
+         esc_sequence,
+         payload.location.file_name(),
+         payload.location.line(),
+         std::format("{:%H:%M:%S}", std::chrono::system_clock::now()),
+         payload.message);
    }
 
    auto Logger::log_once(Payload const& payload) -> void
    {
       if (not location_entries_.insert(payload.location).second)
-      {
          return;
-      }
 
       return log(payload);
    }

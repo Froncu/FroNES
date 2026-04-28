@@ -5,20 +5,19 @@
 
 namespace nes
 {
-   class UnsupportedOpcode final: public EmulationException
+   class UnsupportedOpcode final : public EmulationException
    {
-   public:
-      UnsupportedOpcode(ProgramCounter program_counter, Byte opcode,
-         std::source_location const& location = std::source_location::current());
-      UnsupportedOpcode(UnsupportedOpcode const&) = default;
-      UnsupportedOpcode(UnsupportedOpcode&&) = delete;
+      public:
+         UnsupportedOpcode(ProgramCounter program_counter, Byte opcode, std::source_location const& location = std::source_location::current());
+         UnsupportedOpcode(UnsupportedOpcode const&) = default;
+         UnsupportedOpcode(UnsupportedOpcode&&) = delete;
 
-      ~UnsupportedOpcode() override = default;
+         ~UnsupportedOpcode() override = default;
 
-      auto operator=(UnsupportedOpcode const&) -> UnsupportedOpcode& = delete;
-      auto operator=(UnsupportedOpcode&&) -> UnsupportedOpcode& = delete;
+         auto operator=(UnsupportedOpcode const&) -> UnsupportedOpcode& = delete;
+         auto operator=(UnsupportedOpcode&&) -> UnsupportedOpcode& = delete;
 
-      Byte const opcode;
+         Byte const opcode;
    };
 }
 

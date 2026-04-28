@@ -5,19 +5,19 @@
 
 namespace nes
 {
-   class EmulatorException: public std::runtime_error
+   class EmulatorException : public std::runtime_error
    {
-   public:
-      EmulatorException(std::string_view what, std::source_location const& location = std::source_location::current());
-      EmulatorException(EmulatorException const&) = default;
-      EmulatorException(EmulatorException&&) = delete;
+      public:
+         EmulatorException(std::string_view what, std::source_location const& location = std::source_location::current());
+         EmulatorException(EmulatorException const&) = default;
+         EmulatorException(EmulatorException&&) = delete;
 
-      ~EmulatorException() override = default;
+         ~EmulatorException() override = default;
 
-      auto operator=(EmulatorException const&) -> EmulatorException& = delete;
-      auto operator=(EmulatorException&&) -> EmulatorException& = delete;
+         auto operator=(EmulatorException const&) -> EmulatorException& = delete;
+         auto operator=(EmulatorException&&) -> EmulatorException& = delete;
 
-      std::source_location const location;
+         std::source_location const location;
    };
 }
 
